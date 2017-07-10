@@ -348,6 +348,10 @@
 		C468D0621E9CD4B3005FACFA /* AKPeriodicFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = C468D0611E9CD4B3005FACFA /* AKPeriodicFunction.swift */; };
 		C46960181C0F8C3900A65FBF /* AKNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = C46960171C0F8C3900A65FBF /* AKNode.swift */; };
 		C46C795C1C4C5C4600F6CE3D /* morphingOscillator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C46C795B1C4C5C4600F6CE3D /* morphingOscillator.swift */; };
+		C46DE1061F1330C50060DD79 /* AKSynthOne.swift in Sources */ = {isa = PBXBuildFile; fileRef = C46DE1021F1330C50060DD79 /* AKSynthOne.swift */; };
+		C46DE1071F1330C50060DD79 /* AKSynthOneAudioUnit.h in Headers */ = {isa = PBXBuildFile; fileRef = C46DE1031F1330C50060DD79 /* AKSynthOneAudioUnit.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C46DE1081F1330C50060DD79 /* AKSynthOneAudioUnit.mm in Sources */ = {isa = PBXBuildFile; fileRef = C46DE1041F1330C50060DD79 /* AKSynthOneAudioUnit.mm */; };
+		C46DE1091F1330C50060DD79 /* AKSynthOneDSPKernel.hpp in Headers */ = {isa = PBXBuildFile; fileRef = C46DE1051F1330C50060DD79 /* AKSynthOneDSPKernel.hpp */; };
 		C46EECCF1C9FF3C8007FEA1B /* adsrEnvelope.swift in Sources */ = {isa = PBXBuildFile; fileRef = C46EECCE1C9FF3C8007FEA1B /* adsrEnvelope.swift */; };
 		C470476E1E75314C00D9906F /* AKStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = C470476D1E75314B00D9906F /* AKStepper.swift */; };
 		C47047701E7685A800D9906F /* Shakers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C470476F1E7685A800D9906F /* Shakers.cpp */; };
@@ -1197,6 +1201,10 @@
 		C468D0611E9CD4B3005FACFA /* AKPeriodicFunction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AKPeriodicFunction.swift; sourceTree = "<group>"; };
 		C46960171C0F8C3900A65FBF /* AKNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AKNode.swift; sourceTree = "<group>"; };
 		C46C795B1C4C5C4600F6CE3D /* morphingOscillator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = morphingOscillator.swift; sourceTree = "<group>"; };
+		C46DE1021F1330C50060DD79 /* AKSynthOne.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AKSynthOne.swift; sourceTree = "<group>"; };
+		C46DE1031F1330C50060DD79 /* AKSynthOneAudioUnit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AKSynthOneAudioUnit.h; sourceTree = "<group>"; };
+		C46DE1041F1330C50060DD79 /* AKSynthOneAudioUnit.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AKSynthOneAudioUnit.mm; sourceTree = "<group>"; };
+		C46DE1051F1330C50060DD79 /* AKSynthOneDSPKernel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = AKSynthOneDSPKernel.hpp; sourceTree = "<group>"; };
 		C46EECCE1C9FF3C8007FEA1B /* adsrEnvelope.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = adsrEnvelope.swift; sourceTree = "<group>"; };
 		C470476D1E75314B00D9906F /* AKStepper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AKStepper.swift; sourceTree = "<group>"; };
 		C470476F1E7685A800D9906F /* Shakers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Shakers.cpp; sourceTree = "<group>"; };
@@ -2120,6 +2128,7 @@
 				C48AA6631C0FA382006EB131 /* Noise */,
 				C42F35561C057F4C000E937C /* Oscillators */,
 				C40C42691C41B22A009D870B /* Physical Models */,
+				C46DE1011F1330C50060DD79 /* Synth One */,
 			);
 			path = Generators;
 			sourceTree = "<group>";
@@ -2914,6 +2923,17 @@
 				C468096C1CEECB6900ADFC05 /* AKPitchShifterDSPKernel.hpp */,
 			);
 			path = "Pitch Shifter";
+			sourceTree = "<group>";
+		};
+		C46DE1011F1330C50060DD79 /* Synth One */ = {
+			isa = PBXGroup;
+			children = (
+				C46DE1021F1330C50060DD79 /* AKSynthOne.swift */,
+				C46DE1031F1330C50060DD79 /* AKSynthOneAudioUnit.h */,
+				C46DE1041F1330C50060DD79 /* AKSynthOneAudioUnit.mm */,
+				C46DE1051F1330C50060DD79 /* AKSynthOneDSPKernel.hpp */,
+			);
+			path = "Synth One";
 			sourceTree = "<group>";
 		};
 		C47047731E76884C00D9906F /* Shaker */ = {
@@ -3876,6 +3896,7 @@
 				C470477B1E76884C00D9906F /* AKShakerDSPKernel.hpp in Headers */,
 				C40C41501C40E3A5009D870B /* EZAudioDevice.h in Headers */,
 				C47047AE1E76A2FD00D9906F /* TubeBell.h in Headers */,
+				C46DE1071F1330C50060DD79 /* AKSynthOneAudioUnit.h in Headers */,
 				C40C41661C40E3A5009D870B /* EZOutput.h in Headers */,
 				C4537FC61C3A438D00A51738 /* AKHighPassButterworthFilterAudioUnit.h in Headers */,
 				C40C41561C40E3A5009D870B /* EZAudioFile.h in Headers */,
@@ -3997,6 +4018,7 @@
 				C487B60C1DD9236900C56B59 /* OneZero.h in Headers */,
 				FED92BE41ED1331D00E93264 /* AKSamplePlayerAudioUnit.h in Headers */,
 				C453804A1C3A59EA00A51738 /* AKOperationEffectAudioUnit.h in Headers */,
+				C46DE1091F1330C50060DD79 /* AKSynthOneDSPKernel.hpp in Headers */,
 				C49A0A381D5435C2007D8ADB /* AKKorgLowPassFilterAudioUnit.h in Headers */,
 				C453808E1C3A5C0C00A51738 /* AKPinkNoiseAudioUnit.h in Headers */,
 				F02767341E79D1D20099CA47 /* AKCustomUgenInfo.h in Headers */,
@@ -4034,7 +4056,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
-				LastUpgradeCheck = 0800;
+				LastUpgradeCheck = 0900;
 				ORGANIZATIONNAME = AudioKit;
 				TargetAttributes = {
 					C42F34FF1C057E03000E937C = {
@@ -4233,6 +4255,7 @@
 				C4F8C8DB1DCA8CE4001F38F2 /* gen_padsynth.c in Sources */,
 				C45380141C3A4CCE00A51738 /* AKCostelloReverbAudioUnit.mm in Sources */,
 				C45380751C3A5BDA00A51738 /* AKOscillatorAudioUnit.mm in Sources */,
+				C46DE1061F1330C50060DD79 /* AKSynthOne.swift in Sources */,
 				C4537FF41C3A438D00A51738 /* AKToneComplementFilterAudioUnit.mm in Sources */,
 				C4F8C8B21DCA8CE4001F38F2 /* autowah.c in Sources */,
 				C4537FE81C3A438D00A51738 /* AKRolandTB303FilterAudioUnit.mm in Sources */,
@@ -4420,6 +4443,7 @@
 				C48C6CBC1D3C15F1008EA51B /* waveset.c in Sources */,
 				C4F8C8BB1DCA8CE4001F38F2 /* bpm.c in Sources */,
 				C4F8C8F71DCA8CE4001F38F2 /* p.c in Sources */,
+				C46DE1081F1330C50060DD79 /* AKSynthOneAudioUnit.mm in Sources */,
 				C48C6C821D3C15F1008EA51B /* maygate.c in Sources */,
 				C42899B41D55ACBF00B941B5 /* peaklim.c in Sources */,
 				C48C6CB61D3C15F1008EA51B /* trand.c in Sources */,
@@ -4727,14 +4751,20 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -4780,14 +4810,20 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;

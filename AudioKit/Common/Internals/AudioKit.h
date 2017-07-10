@@ -112,6 +112,8 @@ FOUNDATION_EXPORT const unsigned char AudioKitVersionString[];
 #import "AKTubularBellsAudioUnit.h"
 #import "AKVocalTractAudioUnit.h"
 
+#import "AKSynthOneAudioUnit.h"
+
 // Mixing
 #import "AKBalancerAudioUnit.h"
 #import "AKBoosterAudioUnit.h"
