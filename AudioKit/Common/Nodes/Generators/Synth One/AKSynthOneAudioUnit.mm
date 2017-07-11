@@ -20,108 +20,20 @@
 }
 @synthesize parameterTree = _parameterTree;
 
-- (void)setIndex1:(float)index1 {
-    _kernel.setIndex1(index1);
+- (NSArray *)parameters {
+    NSMutableArray *temp = [NSMutableArray arrayWithCapacity:32];
+    for (int i = 0; i < 32; i++) {
+        [temp setObject:[NSNumber numberWithFloat:_kernel.parameters[i]] atIndexedSubscript:i];
+    }
+    return [NSArray arrayWithArray:temp];
 }
 
-- (void)setIndex2:(float)index2 {
-    _kernel.setIndex2(index2);
-}
-
-- (void)setMorphBalance:(float)morphBalance {
-    _kernel.setMorphBalance(morphBalance);
-}
-
-- (void)setMorph1PitchOffset:(float)morph1PitchOffset {
-    _kernel.setMorph1PitchOffset(morph1PitchOffset);
-}
-
-- (void)setMorph2PitchOffset:(float)morph2PitchOffset {
-    _kernel.setMorph2PitchOffset(morph2PitchOffset);
-}
-
-- (void)setMorph1Mix:(float)morph1Mix {
-    _kernel.setMorph1Mix(morph1Mix);
-}
-
-- (void)setMorph2Mix:(float)morph2Mix {
-    _kernel.setMorph2Mix(morph2Mix);
-}
-
-- (void)setSubOscMix:(float)subOscMix {
-    _kernel.setSubOscMix(subOscMix);
-}
-
-- (void)setSubOscOctavesDown:(float)subOscOctavesDown {
-    _kernel.setSubOscOctavesDown(subOscOctavesDown);
-}
-
-- (void)setSubOscIsSquare:(float)subOscIsSquare {
-    _kernel.setSubOscIsSquare(subOscIsSquare);
-}
-
-- (void)setFmMix:(float)fmMix {
-    _kernel.setFmMix(fmMix);
-}
-
-- (void)setFmMod:(float)fmMod {
-    _kernel.setFmMod(fmMod);
-}
-
-- (void)setNoiseMix:(float)noiseMix {
-    _kernel.setNoiseMix(noiseMix);
-}
-
-- (void)setLfoIndex:(float)lfoIndex {
-    _kernel.setLfoIndex(lfoIndex);
-}
-
-- (void)setLfoAmplitude:(float)lfoAmplitude {
-    _kernel.setLfoAmplitude(lfoAmplitude);
-}
-
-- (void)setLfoRate:(float)lfoRate {
-    _kernel.setLfoRate(lfoRate);
-}
-
-- (void)setCutoffFrequency:(float)cutoffFrequency {
-    _kernel.setCutoffFrequency(cutoffFrequency);
-}
-
-- (void)setResonance:(float)resonance {
-    _kernel.setResonance(resonance);
-}
-
-- (void)setFilterMix:(float)filterMix {
-    _kernel.setFilterMix(filterMix);
-}
-
-- (void)setFilterADSRMix:(float)filterADSRMix {
-    _kernel.setFilterADSRMix(filterADSRMix);
-}
-
-- (void)setIsMono:(float)isMono {
-    _kernel.setIsMono(isMono);
-}
-
-- (void)setGlide:(float)glide {
-    _kernel.setGlide(glide);
-}
-
-- (void)setFilterAttackDuration:(float)filterAttackDuration {
-    _kernel.setFilterAttackDuration(filterAttackDuration);
-}
-
-- (void)setFilterDecayDuration:(float)filterDecayDuration {
-    _kernel.setFilterDecayDuration(filterDecayDuration);
-}
-
-- (void)setFilterSustainLevel:(float)filterSustainLevel {
-    _kernel.setFilterSustainLevel(filterSustainLevel);
-}
-
-- (void)setFilterReleaseDuration:(float)filterReleaseDuration {
-    _kernel.setFilterReleaseDuration(filterReleaseDuration);
+- (void)setParameters:(NSArray *)parameters {
+    float params[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    for (int i = 0; i < parameters.count; i++) {
+        params[i] =[parameters[i] floatValue];
+    }
+    _kernel.setParameters(params);
 }
 
 standardBankFunctions()

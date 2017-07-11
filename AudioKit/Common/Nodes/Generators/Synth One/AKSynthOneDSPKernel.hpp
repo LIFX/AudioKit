@@ -147,6 +147,7 @@ public:
         
         void noteOn(int noteNumber, int velocity) {
             noteOn(noteNumber, velocity, (float)noteToHz(noteNumber));
+            NSLog(@"dm: %g", kernel->detuningMultiplier);
         }
         
         void noteOn(int noteNumber, int velocity, float frequency) {
@@ -179,7 +180,6 @@ public:
             float originalFrequency1 = oscmorph1->freq;
             oscmorph1->freq *= kernel->detuningMultiplierSmooth;
             oscmorph1->freq += kernel->detuningOffset;
-            NSLog(@"dm: %g", kernel->detuningMultiplierSmooth);
             oscmorph1->freq = clamp(oscmorph1->freq, 0.0f, 22050.0f);
             oscmorph1->wtpos = kernel->index1;
             
@@ -300,6 +300,15 @@ public:
         sp_port_init(sp, cutoffPort, 0.05);
         sp_port_create(&resonancePort);
         sp_port_init(sp, resonancePort, 0.05);
+        
+        sp_bitcrush_create(&bitcrush);
+        sp_bitcrush_init(sp, bitcrush);
+
+        sp_osc_create(&panOscillator);
+        sp_osc_init(sp, panOscillator, sine, 0.0);
+        sp_pan2_create(&pan);
+        sp_pan2_init(sp, pan);
+        
     }
     
     void setupMono() {
@@ -362,165 +371,25 @@ public:
     }
     
     standardBankKernelFunctions()
-    
-    void setIndex1(float value) {
-        index1 = clamp(value, 0.0f, 1.0f);
-        index1Ramper.setImmediate(index1);
+
+    void setParameters(float params[]) {
+        for (int i = 0; i < 32; i++) {
+            parameters[i] = params[i];
+        }
+        NSLog(@"Setting dm via parameters: %g", parameters[31]);
     }
-    
-    void setIndex2(float value) {
-        index2 = clamp(value, 0.0f, 1.0f);
-        index2Ramper.setImmediate(index2);
-    }
-    
-    void setMorphBalance(float value) {
-        morphBalance = clamp(value, 0.0f, 1.0f);
-        morphBalanceRamper.setImmediate(morphBalance);
-    }
-    
-    void setMorph1PitchOffset(float value) {
-        morph1PitchOffset = clamp(value, 0.0f, 1.0f);
-        morph1PitchOffsetRamper.setImmediate(morph1PitchOffset);
-    }
-    
-    void setMorph2PitchOffset(float value) {
-        morph2PitchOffset = clamp(value, 0.0f, 1.0f);
-        morph2PitchOffsetRamper.setImmediate(morph2PitchOffset);
-    }
-    
-    void setMorph1Mix(float value) {
-        morph1Mix = clamp(value, 0.0f, 1.0f);
-        morph1MixRamper.setImmediate(morph1Mix);
-    }
-    
-    void setMorph2Mix(float value) {
-        morph2Mix = clamp(value, 0.0f, 1.0f);
-        morph2MixRamper.setImmediate(morph2Mix);
-    }
-    
-    void setSubOscMix(float value) {
-        subOscMix = clamp(value, 0.0f, 1.0f);
-        subOscMixRamper.setImmediate(subOscMix);
-    }
-    
-    void setSubOscOctavesDown(float value) {
-        subOscOctavesDown = clamp(value, 0.0f, 1.0f);
-        subOscOctavesDownRamper.setImmediate(subOscOctavesDown);
-    }
-    
-    void setSubOscIsSquare(float value) {
-        subOscIsSquare = clamp(value, 0.0f, 1.0f);
-        subOscIsSquareRamper.setImmediate(subOscIsSquare);
-    }
-    
-    void setFmMix(float value) {
-        fmMix = clamp(value, 0.0f, 1.0f);
-        fmMixRamper.setImmediate(fmMix);
-    }
-    
-    void setFmMod(float value) {
-        fmMod = clamp(value, 0.0f, 1.0f);
-        fmModRamper.setImmediate(fmMod);
-    }
-    
-    void setNoiseMix(float value) {
-        noiseMix = clamp(value, 0.0f, 1.0f);
-        noiseMixRamper.setImmediate(noiseMix);
-    }
-    
-    void setLfoIndex(float value) {
-        lfoIndex = clamp(value, 0.0f, 1.0f);
-        lfoIndexRamper.setImmediate(lfoIndex);
-    }
-    
-    void setLfoAmplitude(float value) {
-        lfoAmplitude = clamp(value, 0.0f, 1.0f);
-        lfoAmplitudeRamper.setImmediate(lfoAmplitude);
-    }
-    
-    void setLfoRate(float value) {
-        lfoRate = clamp(value, 0.0f, 1.0f);
-        lfoRateRamper.setImmediate(lfoRate);
-    }
-    
-    void setCutoffFrequency(float value) {
-        cutoffFrequency = clamp(value, 0.0f, 22000.0f);
-        cutoffFrequencyRamper.setImmediate(cutoffFrequency);
-    }
-    
-    void setResonance(float value) {
-        resonance = clamp(value, 0.0f, 1.0f);
-        resonanceRamper.setImmediate(resonance);
-    }
-    
-    void setFilterMix(float value) {
-        filterMix = clamp(value, 0.0f, 1.0f);
-        filterMixRamper.setImmediate(filterMix);
-    }
-    
-    void setFilterADSRMix(float value) {
-        filterADSRMix = clamp(value, 0.0f, 1.0f);
-        filterADSRMixRamper.setImmediate(filterADSRMix);
-    }
-    
-    void setIsMono(float value) {
-        isMono = clamp(value, 0.0f, 1.0f);
-        isMonoRamper.setImmediate(isMono);
-    }
-    
-    void setGlide(float value) {
-        glide = clamp(value, 0.0f, 1.0f);
-        glideRamper.setImmediate(glide);
-    }
-    
-    void setFilterAttackDuration(float value) {
-        filterAttackDuration = clamp(value, 0.0f, 1.0f);
-        filterAttackDurationRamper.setImmediate(filterAttackDuration);
-    }
-    
-    void setFilterDecayDuration(float value) {
-        filterDecayDuration = clamp(value, 0.0f, 1.0f);
-        filterDecayDurationRamper.setImmediate(filterDecayDuration);
-    }
-    
-    void setFilterSustainLevel(float value) {
-        filterSustainLevel = clamp(value, 0.0f, 1.0f);
-        filterSustainLevelRamper.setImmediate(filterSustainLevel);
-    }
-    
-    void setFilterReleaseDuration(float value) {
-        filterReleaseDuration = clamp(value, 0.0f, 1.0f);
-        filterReleaseDurationRamper.setImmediate(filterReleaseDuration);
-    }
-        
 
     void setParameter(AUParameterAddress address, AUValue value) {
-        switch (address) {
-                
-            case index1Address:
-                index1Ramper.setUIValue(clamp(value, 0.0f, 1.0f));
-                break;
-            standardBankSetParameters()
-        }
+        NSLog(@"Got %d %g", address, value);
+        rampers[address].setUIValue(clamp(value, -100000.0f, 100000.0f)); // AOP Clamping is wrong
     }
 
     AUValue getParameter(AUParameterAddress address) {
-        switch (address) {
-
-            case index1Address:
-                return index1Ramper.getUIValue();
-            standardBankGetParameters()
-        }
+        return rampers[address].getUIValue();
     }
 
     void startRamp(AUParameterAddress address, AUValue value, AUAudioFrameCount duration) override {
-        switch (address) {
-                
-            case index1Address:
-                index1Ramper.startRamp(clamp(value, 0.0f, 1.0f), duration);
-                break;
-            standardBankStartRamps()
-        }
+        rampers[address].startRamp(clamp(value, -100000.0f, 1000000.0f), duration); // AOP clamping is wrong
     }
     
     standardHandleMIDI()
@@ -529,7 +398,43 @@ public:
         
         float* outL = (float*)outBufferListPtr->mBuffers[0].mData + bufferOffset;
         float* outR = (float*)outBufferListPtr->mBuffers[1].mData + bufferOffset;
-        
+
+        for (int i = 0; i < 32 ; i++ ) {
+            parameters[i] = double(rampers[i].getAndStep());
+        }
+        index1 = parameters[index1Address];
+        index2 = parameters[index2Address];
+        morphBalance = parameters[morphBalanceAddress];
+        morph1PitchOffset = parameters[morph1PitchOffsetAddress];
+        morph2PitchOffset = parameters[morph2PitchOffsetAddress];
+        morph1Mix = parameters[morph1MixAddress];
+        morph2Mix = parameters[morph2MixAddress];
+        subOscMix = parameters[subOscMixAddress];
+        subOscOctavesDown = parameters[subOscOctavesDownAddress];
+        subOscIsSquare = parameters[subOscIsSquareAddress];
+        fmMix = parameters[fmMixAddress];
+        fmMod = parameters[fmModAddress];
+        noiseMix = parameters[noiseMixAddress];
+        lfoIndex = parameters[lfoIndexAddress];
+        lfoAmplitude = parameters[lfoAmplitudeAddress];
+        lfoRate = parameters[lfoRateAddress];
+        cutoffFrequency = parameters[cutoffFrequencyAddress];
+        resonance = parameters[resonanceAddress];
+        filterMix = parameters[filterMixAddress];
+        filterADSRMix = parameters[filterADSRMixAddress];
+        isMono = parameters[isMonoAddress];
+        glide = parameters[glideAddress];
+        filterAttackDuration = parameters[filterAttackDurationAddress];
+        filterDecayDuration = parameters[filterDecayDurationAddress];
+        filterSustainLevel = parameters[filterSustainLevelAddress];
+        filterReleaseDuration = parameters[filterReleaseDurationAddress];
+        attackDuration = parameters[attackDurationAddress];
+        decayDuration = parameters[decayDurationAddress];
+        sustainLevel = parameters[sustainLevelAddress];
+        releaseDuration = parameters[releaseDurationAddress];
+        detuningOffset = parameters[detuningOffsetAddress];
+        detuningMultiplier = parameters[detuningMultiplierAddress];
+
         for (AUAudioFrameCount i = 0; i < frameCount; ++i) {
             outL[i] = 0.0f;
             outR[i] = 0.0f;
@@ -573,13 +478,26 @@ public:
             
             lfoOutput *= lfoAmplitude;
             
-//            sp_port_compute(sp, multiplierPort, &detuningMultiplier, &detuningMultiplierSmooth);
-//            sp_port_compute(sp, balancePort, &morphBalance, &morphBalanceSmooth);
-//            sp_port_compute(sp, cutoffPort, &cutoffFrequency, &cutoffFrequencySmooth);
-//            sp_port_compute(sp, resonancePort, &resonance, &resonanceSmooth);
+            sp_port_compute(sp, multiplierPort, &detuningMultiplier, &detuningMultiplierSmooth);
+            sp_port_compute(sp, balancePort, &morphBalance, &morphBalanceSmooth);
+            sp_port_compute(sp, cutoffPort, &cutoffFrequency, &cutoffFrequencySmooth);
+            sp_port_compute(sp, resonancePort, &resonance, &resonanceSmooth);
+            float synthOut = outL[i];
+            float finalOutL = 0.0;
+            float finalOutR = 0.0;
             
-            outL[i] *= 0.5f;
-            outR[i] *= 0.5f;
+//            sp_bitcrush_compute(sp, bitcrush, synthOut, finalOut)
+            float panValue = 0.0;
+            panOscillator->freq = 2.0;
+            panOscillator->amp = 1.0;
+            sp_osc_compute(sp, panOscillator, nil, &panValue);
+            pan->pan = panValue;
+            sp_pan2_compute(sp, pan, &synthOut, &finalOutL, &finalOutR);
+            
+            outL[i] = finalOutL;
+            outR[i] = finalOutR;
+//            outL[i] *= 0.5f;
+//            outR[i] *= 0.5f;
         }
     }
     
@@ -594,6 +512,10 @@ private:
     
     sp_ftbl *sine;
     sp_phasor *lfo;
+    sp_bitcrush *bitcrush;
+    sp_pan2 *pan;
+    sp_osc *panOscillator;
+
     float lfoOutput = 0.0;
     
     sp_port *midiNotePort;
@@ -606,55 +528,54 @@ private:
     sp_port *resonancePort;
 
 public:
-    float index1 = 2.666;
-    float index2 = 1.666;
-    
-    float morphBalance = 0.5666;
+
+    float parameters[32] = {
+        0, // index1
+        0, // index2
+        0.5, // morphBalance
+        0, // morph1PitchOffset
+        0, // morph2PitchOffset
+        1, // morph1Mix
+        1, // morph2Mix
+        0, // subOscMix
+        0, // subOscOctavesDown
+        0, // subOscIsSquare
+        0, // fmMix
+        0, // fmMod
+        0, // noiseMix
+        0, // lfoIndex
+        1000, // lfoAmplitude
+        1, // lfoRate
+        1000, // cutoffFrequency
+        0.5, // resonance
+        0.5, // filterMix
+        0.5, // filterADSRMix
+        0, // isMono
+        0, // glide
+        0.1, // filterAttackDuration
+        0.1, // filterDecayDuration
+        1, // filterSustainLevel
+        0.1, // filterReleaseDuration
+        0.1, // attackDuration
+        0.1, // decayDuration
+        0.1, // sustainLevel
+        0.1, // releaseDuration
+        0, // detuningOffset
+        1 // detuningMultiplier
+    };
+
+    // Ported values
     float morphBalanceSmooth = 0.5666;
-    float morph1PitchOffset = 0.666;
-    float morph2PitchOffset = 7.666;
-    
-    float morph1Mix = 0.666;
-    float morph2Mix = 0.666;
-    float subOscMix = 0.666;
-    float subOscOctavesDown = 1.0;
-    bool  subOscIsSquare = false;
-    float fmMix = 0.666;
-    float fmMod = 0.666;
-    float noiseMix = 0.666;
-    
-    float attackDuration = 0.1;
-    float decayDuration = 0.1;
-    float sustainLevel = 0.1666;
-    float releaseDuration = 0.1;
-    
-    float detuningOffset = 66.6;
-    float detuningMultiplier = 1.66;
     float detuningMultiplierSmooth = 1.66;
-    
-    float lfoIndex = 0.666;
-    float lfoAmplitude = 666;
-    float lfoRate = 6.666;
-    int lfoShape = 0;
-    float cutoffFrequency = 1666;
     float cutoffFrequencySmooth = 1666;
-    float resonance = 0.66;
     float resonanceSmooth = 0.5;
-    float filterMix = 0.666;
-    float filterADSRMix = 0.666;
-    
-    
-    int isMono = 0;
-    float glide = 0.0;
-    
-    float filterAttackDuration = 0.1666;
-    float filterDecayDuration = 0.1666;
-    float filterSustainLevel = 0.666;
-    float filterReleaseDuration = 0.666;
-    
+
+    // Orphan
+    float lfoShape = 0;
+
     NoteState* playingNotes = nullptr;
     int playingNotesCount = 0;
-    bool resetted = false;
+    bool resetted = true;
     
     // MONO Stuff
     
@@ -678,38 +599,141 @@ public:
     sp_crossfade *filterCrossFade;
     
     bool notesHeld = false;
+
+    float index1 = parameters[index1Address];
+    float index2 = parameters[index2Address];
+    float morphBalance = parameters[morphBalanceAddress];
+    float morph1PitchOffset = parameters[morph1PitchOffsetAddress];
+    float morph2PitchOffset = parameters[morph2PitchOffsetAddress];
+    float morph1Mix = parameters[morph1MixAddress];
+    float morph2Mix = parameters[morph2MixAddress];
+    float subOscMix = parameters[subOscMixAddress];
+    float subOscOctavesDown = parameters[subOscOctavesDownAddress];
+    float subOscIsSquare = parameters[subOscIsSquareAddress];
+    float fmMix = parameters[fmMixAddress];
+    float fmMod = parameters[fmModAddress];
+    float noiseMix = parameters[noiseMixAddress];
+    float lfoIndex = parameters[lfoIndexAddress];
+    float lfoAmplitude = parameters[lfoAmplitudeAddress];
+    float lfoRate = parameters[lfoRateAddress];
+    float cutoffFrequency = parameters[cutoffFrequencyAddress];
+    float resonance = parameters[resonanceAddress];
+    float filterMix = parameters[filterMixAddress];
+    float filterADSRMix = parameters[filterADSRMixAddress];
+    float isMono = parameters[isMonoAddress];
+    float glide = parameters[glideAddress];
+    float filterAttackDuration = parameters[filterAttackDurationAddress];
+    float filterDecayDuration = parameters[filterDecayDurationAddress];
+    float filterSustainLevel = parameters[filterSustainLevelAddress];
+    float filterReleaseDuration = parameters[filterReleaseDurationAddress];
+    float attackDuration = parameters[attackDurationAddress];
+    float decayDuration = parameters[decayDurationAddress];
+    float sustainLevel = parameters[sustainLevelAddress];
+    float releaseDuration = parameters[releaseDurationAddress];
+    float detuningOffset = parameters[detuningOffsetAddress];
+    float detuningMultiplier = parameters[detuningMultiplierAddress];
+
+    ParameterRamper index1Ramper = parameters[index1Address];
+    ParameterRamper index2Ramper = parameters[index2Address];
+    ParameterRamper morphBalanceRamper = parameters[morphBalanceAddress];
+    ParameterRamper morph1PitchOffsetRamper = parameters[morph1PitchOffsetAddress];
+    ParameterRamper morph2PitchOffsetRamper = parameters[morph2PitchOffsetAddress];
+    ParameterRamper morph1MixRamper = parameters[morph1MixAddress];
+    ParameterRamper morph2MixRamper = parameters[morph2MixAddress];
+    ParameterRamper subOscMixRamper = parameters[subOscMixAddress];
+    ParameterRamper subOscOctavesDownRamper = parameters[subOscOctavesDownAddress];
+    ParameterRamper subOscIsSquareRamper = parameters[subOscIsSquareAddress];
+    ParameterRamper fmMixRamper = parameters[fmMixAddress];
+    ParameterRamper fmModRamper = parameters[fmModAddress];
+    ParameterRamper noiseMixRamper = parameters[noiseMixAddress];
+    ParameterRamper lfoIndexRamper = parameters[lfoIndexAddress];
+    ParameterRamper lfoAmplitudeRamper = parameters[lfoAmplitudeAddress];
+    ParameterRamper lfoRateRamper = parameters[lfoRateAddress];
+    ParameterRamper cutoffFrequencyRamper = parameters[cutoffFrequencyAddress];
+    ParameterRamper resonanceRamper = parameters[resonanceAddress];
+    ParameterRamper filterMixRamper = parameters[filterMixAddress];
+    ParameterRamper filterADSRMixRamper = parameters[filterADSRMixAddress];
+    ParameterRamper isMonoRamper = parameters[isMonoAddress];
+    ParameterRamper glideRamper = parameters[glideAddress];
+    ParameterRamper filterAttackDurationRamper = parameters[filterAttackDurationAddress];
+    ParameterRamper filterDecayDurationRamper = parameters[filterDecayDurationAddress];
+    ParameterRamper filterSustainLevelRamper = parameters[filterSustainLevelAddress];
+    ParameterRamper filterReleaseDurationRamper = parameters[filterReleaseDurationAddress];
+    ParameterRamper attackDurationRamper = parameters[attackDurationAddress];
+    ParameterRamper decayDurationRamper =  parameters[decayDurationAddress];
+    ParameterRamper sustainLevelRamper = parameters[sustainLevelAddress];
+    ParameterRamper releaseDurationRamper = parameters[releaseDurationAddress];
+    ParameterRamper detuningOffsetRamper = parameters[detuningOffsetAddress];
+    ParameterRamper detuningMultiplierParameterRamper = parameters[detuningMultiplierAddress];
+
+    float parameterValues[32] = {
+        index1,
+        index2,
+        morphBalance,
+        morph1PitchOffset,
+        morph2PitchOffset,
+        morph1Mix,
+        morph2Mix,
+        subOscMix,
+        subOscOctavesDown,
+        subOscIsSquare,
+        fmMix,
+        fmMod,
+        noiseMix,
+        lfoIndex,
+        lfoAmplitude,
+        lfoRate,
+        cutoffFrequency,
+        resonance,
+        filterMix,
+        filterADSRMix,
+        isMono,
+        glide,
+        filterAttackDuration,
+        filterDecayDuration,
+        filterSustainLevel,
+        filterReleaseDuration,
+        attackDuration,
+        decayDuration,
+        sustainLevel,
+        releaseDuration,
+        detuningOffset,
+        detuningMultiplier
+    };
     
-    ParameterRamper index1Ramper = 0.0;
-    ParameterRamper index2Ramper = 0.0;
-    ParameterRamper morphBalanceRamper = 0.5;
-    ParameterRamper morph1PitchOffsetRamper = 0.0;
-    ParameterRamper morph2PitchOffsetRamper = 0.0;
-    ParameterRamper morph1MixRamper = 1.0;
-    ParameterRamper morph2MixRamper = 1.0;
-    ParameterRamper subOscMixRamper = 0.0;
-    ParameterRamper subOscOctavesDownRamper = 0.0;
-    ParameterRamper subOscIsSquareRamper = 0.0;
-    ParameterRamper fmMixRamper = 0.0;
-    ParameterRamper fmModRamper = 0.0;
-    ParameterRamper noiseMixRamper = 0.0;
-    ParameterRamper lfoIndexRamper = 0.0;
-    ParameterRamper lfoAmplitudeRamper = 0.0;
-    ParameterRamper lfoRateRamper = 0.0;
-    ParameterRamper cutoffFrequencyRamper = 0.0;
-    ParameterRamper resonanceRamper = 0.0;
-    ParameterRamper filterMixRamper = 0.0;
-    ParameterRamper filterADSRMixRamper = 0.0;
-    ParameterRamper isMonoRamper = 0.0;
-    ParameterRamper glideRamper = 0.0;
-    ParameterRamper filterAttackDurationRamper = 0.1;
-    ParameterRamper filterDecayDurationRamper = 0.1;
-    ParameterRamper filterSustainLevelRamper = 1.0;
-    ParameterRamper filterReleaseDurationRamper = 0.1;
-    ParameterRamper attackDurationRamper = 0.1;
-    ParameterRamper decayDurationRamper = 0.10;
-    ParameterRamper sustainLevelRamper = 1.0;
-    ParameterRamper releaseDurationRamper = 0.1;
-    ParameterRamper detuningOffsetRamper = 0.0;
-    ParameterRamper detuningMultiplierParameterRamper = 1.0;
+    ParameterRamper rampers[32] = {
+        index1Ramper,
+        index2Ramper,
+        morphBalanceRamper,
+        morph1PitchOffsetRamper,
+        morph2PitchOffsetRamper,
+        morph1MixRamper,
+        morph2MixRamper,
+        subOscMixRamper,
+        subOscOctavesDownRamper,
+        subOscIsSquareRamper,
+        fmMixRamper,
+        fmModRamper,
+        noiseMixRamper,
+        lfoIndexRamper,
+        lfoAmplitudeRamper,
+        lfoRateRamper,
+        cutoffFrequencyRamper,
+        resonanceRamper,
+        filterMixRamper,
+        filterADSRMixRamper,
+        isMonoRamper,
+        glideRamper,
+        filterAttackDurationRamper,
+        filterDecayDurationRamper,
+        filterSustainLevelRamper,
+        filterReleaseDurationRamper,
+        attackDurationRamper,
+        decayDurationRamper,
+        sustainLevelRamper,
+        releaseDurationRamper,
+        detuningOffsetRamper,
+        detuningMultiplierRamper,
+    };
 };
 
