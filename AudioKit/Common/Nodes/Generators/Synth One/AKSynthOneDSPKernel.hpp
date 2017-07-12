@@ -376,11 +376,9 @@ public:
         for (int i = 0; i < 32; i++) {
             parameters[i] = params[i];
         }
-        NSLog(@"Setting dm via parameters: %g", parameters[31]);
     }
 
     void setParameter(AUParameterAddress address, AUValue value) {
-        NSLog(@"Got %d %g", address, value);
         rampers[address].setUIValue(clamp(value, -100000.0f, 100000.0f)); // AOP Clamping is wrong
     }
 
