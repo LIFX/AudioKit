@@ -202,12 +202,12 @@ open class AKFMOscillatorBank: AKPolyphonicNode, AKComponent {
     ///
     public init(
         waveform: AKTable,
-        carrierMultiplier: Double = 1.0,
+        carrierMultiplier: Double = 1,
         modulatingMultiplier: Double = 1,
         modulationIndex: Double = 1,
         attackDuration: Double = 0.1,
         decayDuration: Double = 0.1,
-        sustainLevel: Double = 1.0,
+        sustainLevel: Double = 1,
         releaseDuration: Double = 0.1,
         detuningOffset: Double = 0,
         detuningMultiplier: Double = 1) {
@@ -254,7 +254,7 @@ open class AKFMOscillatorBank: AKPolyphonicNode, AKComponent {
         detuningOffsetParameter = tree["detuningOffset"]
         detuningMultiplierParameter = tree["detuningMultiplier"]
 
-        token = tree.token(byAddingParameterObserver: { [weak self] address, value in
+        token = tree.token(byAddingParameterObserver: { [weak self] _, _ in
 
             guard let _ = self else { return } // Replace _ with strongSelf if needed
             DispatchQueue.main.async {
