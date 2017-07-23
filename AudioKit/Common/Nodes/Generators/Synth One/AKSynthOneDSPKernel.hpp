@@ -572,8 +572,7 @@ public:
 
     NoteState* playingNotes = nullptr;
     int playingNotesCount = 0;
-    bool resetted = true;
-    
+
     // MONO Stuff
     
     bool isMonoSetup = false;
