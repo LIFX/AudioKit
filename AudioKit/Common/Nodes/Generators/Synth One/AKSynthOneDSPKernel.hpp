@@ -147,7 +147,6 @@ public:
         
         void noteOn(int noteNumber, int velocity) {
             noteOn(noteNumber, velocity, (float)noteToHz(noteNumber));
-            NSLog(@"dm: %g", kernel->detuningMultiplier);
         }
         
         void noteOn(int noteNumber, int velocity, float frequency) {
