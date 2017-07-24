@@ -91,7 +91,7 @@ standardBankFunctions()
     AUParameter *morph2SemitoneOffsetAUParameter =
     [AUParameter parameter:@"morph2SemitoneOffset"
                       name:@"Morph 2 Semitone Offset"
-                   address:morph1SemitoneOffsetAddress
+                   address:morph2SemitoneOffsetAddress
                        min:0.0
                        max:1.0
                       unit:kAudioUnitParameterUnit_Generic];
