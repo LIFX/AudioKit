@@ -178,7 +178,6 @@ public:
         {
             float originalFrequency1 = oscmorph1->freq;
             oscmorph1->freq *= kernel->detuningMultiplierSmooth;
-            oscmorph1->freq += kernel->detuningOffset;
             oscmorph1->freq = clamp(oscmorph1->freq, 0.0f, 22050.0f);
             oscmorph1->wtpos = kernel->index1;
             
@@ -189,7 +188,8 @@ public:
             oscmorph2->wtpos = kernel->index2;
             
             float originalFrequencySub = subOsc->freq;
-            subOsc->freq *= kernel->detuningMultiplierSmooth / (1.0 + kernel->subOscOctavesDown);
+            subOsc->freq *= kernel->detuningMultiplierSmooth / (2.0 *
+            (1.0 + kernel->subOscOctavesDown));
             
             float originalFrequencyFM = fmOsc->freq;
             fmOsc->freq *= kernel->detuningMultiplierSmooth;
