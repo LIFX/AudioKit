@@ -80,82 +80,82 @@ standardBankFunctions()
                        max:1.0
                       unit:kAudioUnitParameterUnit_Generic];
     
-    AUParameter *morph1PitchOffsetAUParameter =
-    [AUParameter parameter:@"morph1PitchOffset"
-                      name:@"Morph 1 Pitch Offset"
-                   address:morph1PitchOffsetAddress
+    AUParameter *morph1SemitoneOffsetAUParameter =
+    [AUParameter parameter:@"morph1SemitoneOffset"
+                      name:@"Morph 1 Semitone Offset"
+                   address:morph1SemitoneOffsetAddress
                        min:0.0
                        max:1.0
                       unit:kAudioUnitParameterUnit_Generic];
     
-    AUParameter *morph2PitchOffsetAUParameter =
-    [AUParameter parameter:@"morph2PitchOffset"
-                      name:@"Morph 2 Pitch Offset"
-                   address:morph2PitchOffsetAddress
+    AUParameter *morph2SemitoneOffsetAUParameter =
+    [AUParameter parameter:@"morph2SemitoneOffset"
+                      name:@"Morph 2 Semitone Offset"
+                   address:morph1SemitoneOffsetAddress
                        min:0.0
                        max:1.0
                       unit:kAudioUnitParameterUnit_Generic];
     
-    AUParameter *morph1MixAUParameter =
-    [AUParameter parameter:@"morph1Mix"
-                      name:@"Morph 1 Mix"
-                   address:morph1MixAddress
+    AUParameter *morph1VolumeAUParameter =
+    [AUParameter parameter:@"morph1Volume"
+                      name:@"Morph 1 Volume"
+                   address:morph1VolumeAddress
                        min:0.0
                        max:1.0
                       unit:kAudioUnitParameterUnit_Generic];
     
-    AUParameter *morph2MixAUParameter =
-    [AUParameter parameter:@"morph2Mix"
-                      name:@"Morph 2 Mix"
-                   address:morph2MixAddress
+    AUParameter *morph2VolumeAUParameter =
+    [AUParameter parameter:@"morph2Volume"
+                      name:@"Morph 2 Volume"
+                   address:morph2VolumeAddress
                        min:0.0
                        max:1.0
                       unit:kAudioUnitParameterUnit_Generic];
     
-    AUParameter *subOscMixAUParameter =
-    [AUParameter parameter:@"subOscMix"
-                      name:@"Sub Osc Mix"
-                   address:subOscMixAddress
+    AUParameter *subVolumeAUParameter =
+    [AUParameter parameter:@"subVolume"
+                      name:@"Sub Volume"
+                   address:subVolumeAddress
                        min:0.0
                        max:1.0
                       unit:kAudioUnitParameterUnit_Generic];
     
-    AUParameter *subOscOctavesDownAUParameter =
-    [AUParameter parameter:@"subOscOctavesDown"
-                      name:@"Sub Osc Octaves Down"
-                   address:subOscOctavesDownAddress
+    AUParameter *subOctaveDownAUParameter =
+    [AUParameter parameter:@"subOctaveDown"
+                      name:@"Sub Octave Down"
+                   address:subOctaveDownAddress
                        min:0.0
                        max:1.0
                       unit:kAudioUnitParameterUnit_Generic];
     
-    AUParameter *subOscIsSquareAUParameter =
-    [AUParameter parameter:@"subOscIsSquare"
-                      name:@"Sub Osc Is Square"
-                   address:subOscIsSquareAddress
+    AUParameter *subIsSquareAUParameter =
+    [AUParameter parameter:@"subIsSquare"
+                      name:@"Sub Is Square"
+                   address:subIsSquareAddress
                        min:0.0
                        max:1.0
                       unit:kAudioUnitParameterUnit_Generic];
     
-    AUParameter *fmMixAUParameter =
-    [AUParameter parameter:@"fmMix"
-                      name:@"FM Mix"
-                   address:fmMixAddress
+    AUParameter *fmVolumeAUParameter =
+    [AUParameter parameter:@"fmVolume"
+                      name:@"FM Volume"
+                   address:fmVolumeAddress
                        min:0.0
                        max:1.0
                       unit:kAudioUnitParameterUnit_Generic];
     
-    AUParameter *fmModAUParameter =
-    [AUParameter parameter:@"fmMod"
-                      name:@"FM Mod"
-                   address:fmModAddress
+    AUParameter *fmAmountAUParameter =
+    [AUParameter parameter:@"fmAmount"
+                      name:@"FM Amont"
+                   address:fmAmountAddress
                        min:0.0
                        max:1.0
                       unit:kAudioUnitParameterUnit_Generic];
     
-    AUParameter *noiseMixAUParameter =
-    [AUParameter parameter:@"noiseMix"
-                      name:@"Noise Mix"
-                   address:noiseMixAddress
+    AUParameter *noiseVolumeAUParameter =
+    [AUParameter parameter:@"noiseVolume"
+                      name:@"Noise Volume"
+                   address:noiseVolumeAddress
                        min:0.0
                        max:1.0
                       unit:kAudioUnitParameterUnit_Generic];
@@ -184,10 +184,10 @@ standardBankFunctions()
                        max:1.0
                       unit:kAudioUnitParameterUnit_Generic];
     
-    AUParameter *cutoffFrequencyAUParameter =
-    [AUParameter parameter:@"cutoffFrequency"
-                      name:@"Cutoff Frequency"
-                   address:cutoffFrequencyAddress
+    AUParameter *cutoffAUParameter =
+    [AUParameter parameter:@"cutoff"
+                      name:@"Cutoff"
+                   address:cutoffAddress
                        min:0.0
                        max:22000
                       unit:kAudioUnitParameterUnit_Hertz];
@@ -268,20 +268,20 @@ standardBankFunctions()
     index1AUParameter.value = 0;
     index2AUParameter.value = 0;
     morphBalanceAUParameter.value = 0.5;
-    morph1PitchOffsetAUParameter.value = 0;
-    morph2PitchOffsetAUParameter.value = 0;
-    morph1MixAUParameter.value = 1;
-    morph2MixAUParameter.value = 1;
-    subOscMixAUParameter.value = 0;
-    subOscOctavesDownAUParameter.value = 1;
-    subOscIsSquareAUParameter.value = 0;
-    fmMixAUParameter.value = 0;
-    fmModAUParameter.value = 0;
-    noiseMixAUParameter.value = 0;
+    morph1SemitoneOffsetAUParameter.value = 0;
+    morph2SemitoneOffsetAUParameter.value = 0;
+    morph1VolumeAUParameter.value = 1;
+    morph2VolumeAUParameter.value = 1;
+    subVolumeAUParameter.value = 0;
+    subOctaveDownAUParameter.value = 1;
+    subIsSquareAUParameter.value = 0;
+    fmVolumeAUParameter.value = 0;
+    fmAmountAUParameter.value = 0;
+    noiseVolumeAUParameter.value = 0;
     lfoIndexAUParameter.value = 0;
     lfoAmplitudeAUParameter.value = 1;
     lfoRateAUParameter.value = 1;
-    cutoffFrequencyAUParameter.value = 1000;
+    cutoffAUParameter.value = 1000;
     resonanceAUParameter.value = 0.5;
     filterMixAUParameter.value = 1;
     filterADSRMixAUParameter.value = 0.5;
@@ -295,20 +295,20 @@ standardBankFunctions()
     _kernel.setParameter(index1Address, index1AUParameter.value);
     _kernel.setParameter(index2Address, index2AUParameter.value);
     _kernel.setParameter(morphBalanceAddress, morphBalanceAUParameter.value);
-    _kernel.setParameter(morph1PitchOffsetAddress, morph1PitchOffsetAUParameter.value);
-    _kernel.setParameter(morph2PitchOffsetAddress, morph2PitchOffsetAUParameter.value);
-    _kernel.setParameter(morph1MixAddress, morph1MixAUParameter.value);
-    _kernel.setParameter(morph2MixAddress, morph2MixAUParameter.value);
-    _kernel.setParameter(subOscMixAddress, subOscMixAUParameter.value);
-    _kernel.setParameter(subOscOctavesDownAddress, subOscOctavesDownAUParameter.value);
-    _kernel.setParameter(subOscIsSquareAddress, subOscIsSquareAUParameter.value);
-    _kernel.setParameter(fmMixAddress, fmMixAUParameter.value);
-    _kernel.setParameter(fmModAddress, fmModAUParameter.value);
-    _kernel.setParameter(noiseMixAddress, noiseMixAUParameter.value);
+    _kernel.setParameter(morph1SemitoneOffsetAddress, morph1SemitoneOffsetAUParameter.value);
+    _kernel.setParameter(morph2SemitoneOffsetAddress, morph2SemitoneOffsetAUParameter.value);
+    _kernel.setParameter(morph1VolumeAddress, morph1VolumeAUParameter.value);
+    _kernel.setParameter(morph2VolumeAddress, morph2VolumeAUParameter.value);
+    _kernel.setParameter(subVolumeAddress, subVolumeAUParameter.value);
+    _kernel.setParameter(subOctaveDownAddress, subOctaveDownAUParameter.value);
+    _kernel.setParameter(subIsSquareAddress, subIsSquareAUParameter.value);
+    _kernel.setParameter(fmVolumeAddress, fmVolumeAUParameter.value);
+    _kernel.setParameter(fmAmountAddress, fmAmountAUParameter.value);
+    _kernel.setParameter(noiseVolumeAddress, noiseVolumeAUParameter.value);
     _kernel.setParameter(lfoIndexAddress, lfoIndexAUParameter.value);
     _kernel.setParameter(lfoAmplitudeAddress, lfoAmplitudeAUParameter.value);
     _kernel.setParameter(lfoRateAddress, lfoRateAUParameter.value);
-    _kernel.setParameter(cutoffFrequencyAddress, cutoffFrequencyAUParameter.value);
+    _kernel.setParameter(cutoffAddress, cutoffAUParameter.value);
     _kernel.setParameter(resonanceAddress, resonanceAUParameter.value);
     _kernel.setParameter(filterMixAddress, filterMixAUParameter.value);
     _kernel.setParameter(filterADSRMixAddress, filterADSRMixAUParameter.value);
@@ -330,20 +330,20 @@ standardBankFunctions()
         index1AUParameter,
         index2AUParameter,
         morphBalanceAUParameter,
-        morph1PitchOffsetAUParameter,
-        morph2PitchOffsetAUParameter,
-        morph1MixAUParameter,
-        morph2MixAUParameter,
-        subOscMixAUParameter,
-        subOscOctavesDownAUParameter,
-        subOscIsSquareAUParameter,
-        fmMixAUParameter,
-        fmModAUParameter,
-        noiseMixAUParameter,
+        morph1SemitoneOffsetAUParameter,
+        morph2SemitoneOffsetAUParameter,
+        morph1VolumeAUParameter,
+        morph2VolumeAUParameter,
+        subVolumeAUParameter,
+        subOctaveDownAUParameter,
+        subIsSquareAUParameter,
+        fmVolumeAUParameter,
+        fmAmountAUParameter,
+        noiseVolumeAUParameter,
         lfoIndexAUParameter,
         lfoAmplitudeAUParameter,
         lfoRateAUParameter,
-        cutoffFrequencyAUParameter,
+        cutoffAUParameter,
         resonanceAUParameter,
         filterMixAUParameter,
         filterADSRMixAUParameter,
