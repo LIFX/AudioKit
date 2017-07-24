@@ -17,6 +17,7 @@
     // C++ members need to be ivars; they would be copied on access if they were properties.
     AKFluteDSPKernel _kernel;
     BufferedOutputBus _outputBusBuffer;
+    AUHostMusicalContextBlock _musicalContext;
 }
 @synthesize parameterTree = _parameterTree;
 

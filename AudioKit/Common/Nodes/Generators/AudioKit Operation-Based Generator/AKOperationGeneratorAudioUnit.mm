@@ -19,6 +19,7 @@
     AKOperationGeneratorDSPKernel _kernel;
 
     BufferedOutputBus _outputBusBuffer;
+    AUHostMusicalContextBlock _musicalContext;
 }
 @synthesize parameterTree = _parameterTree;
 

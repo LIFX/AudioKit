@@ -164,6 +164,7 @@
         return NO; \
     } \
     _outputBusBuffer.allocateRenderResources(self.maximumFramesToRender); \
+    if (self.musicalContextBlock) { _musicalContext = self.musicalContextBlock; } else _musicalContext = nil; \
     _kernel.init(self.outputBus.format.channelCount, self.outputBus.format.sampleRate); \
     _kernel.reset(); \
     return YES; \
@@ -187,6 +188,12 @@
         _outputBusBuffer.prepareOutputBufferList(outputData, frameCount, true); \
         state->setBuffer(outputData); \
         state->processWithEvents(timestamp, frameCount, realtimeEventListHead); \
+        double currentTempo;\
+        if ( _musicalContext ) { \
+            if (_musicalContext( &currentTempo, NULL, NULL, NULL, NULL, NULL ) ) {\
+                _kernel.handleTempoSetting(currentTempo);\
+            }\
+        }\
         return noErr; \
     }; \
 }

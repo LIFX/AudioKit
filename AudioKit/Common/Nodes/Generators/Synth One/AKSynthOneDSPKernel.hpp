@@ -391,6 +391,13 @@ public:
     
     standardHandleMIDI()
 
+    void handleTempoSetting(float currentTempo) {
+        if (currentTempo != tempo) {
+//            setParameter(cutoffFrequencyAddress, currentTempo);
+            tempo = currentTempo;
+        }
+    }
+
     void process(AUAudioFrameCount frameCount, AUAudioFrameCount bufferOffset) override {
         
         float* outL = (float*)outBufferListPtr->mBuffers[0].mData + bufferOffset;
@@ -524,6 +531,7 @@ private:
     sp_port *cutoffPort;
     sp_port *resonancePort;
 
+    float tempo = 0.0;
 public:
 
     float parameters[32] = {

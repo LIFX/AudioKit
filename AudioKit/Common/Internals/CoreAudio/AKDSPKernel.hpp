@@ -30,6 +30,10 @@ public:
         channels = _channels;
         sampleRate = _sampleRate;
     }
+
+    void handleTempoSetting(float currentTempo) {
+        // Do something
+    }
 };
 
 class AKParametricKernel {
