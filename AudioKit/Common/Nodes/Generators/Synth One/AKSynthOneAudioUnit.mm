@@ -22,15 +22,15 @@
 @synthesize parameterTree = _parameterTree;
 
 - (NSArray *)parameters {
-    NSMutableArray *temp = [NSMutableArray arrayWithCapacity:32];
-    for (int i = 0; i < 32; i++) {
+    NSMutableArray *temp = [NSMutableArray arrayWithCapacity:33];
+    for (int i = 0; i < 33; i++) {
         [temp setObject:[NSNumber numberWithFloat:_kernel.parameters[i]] atIndexedSubscript:i];
     }
     return [NSArray arrayWithArray:temp];
 }
 
 - (void)setParameters:(NSArray *)parameters {
-    float params[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    float params[33] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     for (int i = 0; i < parameters.count; i++) {
         params[i] =[parameters[i] floatValue];
     }
@@ -264,6 +264,14 @@ standardBankFunctions()
                        max:1.0
                       unit:kAudioUnitParameterUnit_Generic];
     
+    AUParameter *masterVolumeAUParameter =
+    [AUParameter parameter:@"masterVolume"
+                      name:@"masterVolume"
+                   address:masterVolumeAddress
+                       min:0.0
+                       max:2.0
+                      unit:kAudioUnitParameterUnit_Generic];
+    
     // Initialize the parameter values.
     index1AUParameter.value = 0;
     index2AUParameter.value = 0;
@@ -291,7 +299,8 @@ standardBankFunctions()
     filterDecayDurationAUParameter.value = 0.1;
     filterSustainLevelAUParameter.value = 1.0;
     filterReleaseDurationAUParameter.value = 0.1;
-
+    masterVolumeAUParameter.value = 0.8;
+    
     _kernel.setParameter(index1Address, index1AUParameter.value);
     _kernel.setParameter(index2Address, index2AUParameter.value);
     _kernel.setParameter(morphBalanceAddress, morphBalanceAUParameter.value);
@@ -324,6 +333,7 @@ standardBankFunctions()
     _kernel.setParameter(releaseDurationAddress, releaseDurationAUParameter.value);
     _kernel.setParameter(detuningOffsetAddress, detuningOffsetAUParameter.value);
     _kernel.setParameter(detuningMultiplierAddress, detuningMultiplierAUParameter.value);
+    _kernel.setParameter(masterVolumeAddress, masterVolumeAUParameter.value);
 
     // Create the parameter tree.
     _parameterTree = [AUParameterTree createTreeWithChildren:@[
@@ -358,7 +368,8 @@ standardBankFunctions()
         sustainLevelAUParameter,
         releaseDurationAUParameter,
         detuningOffsetAUParameter,
-        detuningMultiplierAUParameter
+        detuningMultiplierAUParameter,
+        masterVolumeAUParameter
     ]];
 
     parameterTreeBlock(SynthOne)
