@@ -42,7 +42,8 @@ enum {
     sustainLevelAddress = 28,
     releaseDurationAddress = 29,
     detuningOffsetAddress = 30,
-    detuningMultiplierAddress = 31
+    detuningMultiplierAddress = 31,
+    masterVolumeAddress = 32
 };
 
 class AKSynthOneDSPKernel : public AKBankDSPKernel, public AKOutputBuffered {
@@ -403,7 +404,7 @@ public:
         float* outL = (float*)outBufferListPtr->mBuffers[0].mData + bufferOffset;
         float* outR = (float*)outBufferListPtr->mBuffers[1].mData + bufferOffset;
 
-        for (int i = 0; i < 32 ; i++ ) {
+        for (int i = 0; i < 33 ; i++ ) {
             parameters[i] = double(rampers[i].getAndStep());
         }
         index1 = parameters[index1Address];
@@ -438,6 +439,7 @@ public:
         releaseDuration = parameters[releaseDurationAddress];
         detuningOffset = parameters[detuningOffsetAddress];
         detuningMultiplier = parameters[detuningMultiplierAddress];
+        masterVolume = parameters[masterVolumeAddress];
 
         for (AUAudioFrameCount i = 0; i < frameCount; ++i) {
             outL[i] = 0.0f;
@@ -498,8 +500,8 @@ public:
             pan->pan = panValue;
             sp_pan2_compute(sp, pan, &synthOut, &finalOutL, &finalOutR);
             
-            outL[i] = finalOutL;
-            outR[i] = finalOutR;
+            outL[i] = finalOutL * masterVolume;
+            outR[i] = finalOutR * masterVolume;
 //            outL[i] *= 0.5f;
 //            outR[i] *= 0.5f;
         }
@@ -534,7 +536,7 @@ private:
     float tempo = 0.0;
 public:
 
-    float parameters[32] = {
+    float parameters[33] = {
         0, // index1
         0, // index2
         0.5, // morphBalance
@@ -566,7 +568,8 @@ public:
         0.1, // sustainLevel
         0.1, // releaseDuration
         0, // detuningOffset
-        1 // detuningMultiplier
+        1, // detuningMultiplier
+        0.8 // masterVolume
     };
 
     // Ported values
@@ -630,6 +633,7 @@ public:
     float filterDecayDuration = parameters[filterDecayDurationAddress];
     float filterSustainLevel = parameters[filterSustainLevelAddress];
     float filterReleaseDuration = parameters[filterReleaseDurationAddress];
+    float masterVolume = parameters[masterVolumeAddress];
     float attackDuration = parameters[attackDurationAddress];
     float decayDuration = parameters[decayDurationAddress];
     float sustainLevel = parameters[sustainLevelAddress];
@@ -669,8 +673,9 @@ public:
     ParameterRamper releaseDurationRamper = parameters[releaseDurationAddress];
     ParameterRamper detuningOffsetRamper = parameters[detuningOffsetAddress];
     ParameterRamper detuningMultiplierParameterRamper = parameters[detuningMultiplierAddress];
+    ParameterRamper masterVolumeRamper = parameters[masterVolumeAddress];
 
-    float parameterValues[32] = {
+    float parameterValues[33] = {
         index1,
         index2,
         morphBalance,
@@ -702,10 +707,11 @@ public:
         sustainLevel,
         releaseDuration,
         detuningOffset,
-        detuningMultiplier
+        detuningMultiplier,
+        masterVolume
     };
     
-    ParameterRamper rampers[32] = {
+    ParameterRamper rampers[33] = {
         index1Ramper,
         index2Ramper,
         morphBalanceRamper,
@@ -738,6 +744,7 @@ public:
         releaseDurationRamper,
         detuningOffsetRamper,
         detuningMultiplierRamper,
+        masterVolume
     };
 };
 
