@@ -52,6 +52,7 @@ public:
     struct NoteState {
         NoteState* next;
         NoteState* prev;
+        int baseNote = 0;
         AKSynthOneDSPKernel* kernel;
         
         enum { stageOff, stageOn, stageRelease };
@@ -151,6 +152,7 @@ public:
         }
         
         void noteOn(int noteNumber, int velocity, float frequency) {
+            baseNote = noteNumber;
             if (velocity == 0) {
                 if (stage == stageOn) {
                     stage = stageRelease;
@@ -177,12 +179,12 @@ public:
         
         void run(int frameCount, float *outL, float *outR)
         {
-            float originalFrequency1 = oscmorph1->freq;
+            float originalFrequency1 = (float)noteToHz(baseNote + (int)kernel->morph1SemitoneOffset);
             oscmorph1->freq *= kernel->detuningMultiplierSmooth;
             oscmorph1->freq = clamp(oscmorph1->freq, 0.0f, 22050.0f);
             oscmorph1->wtpos = kernel->index1;
             
-            float originalFrequency2 = oscmorph2->freq;
+            float originalFrequency2 = (float)noteToHz(baseNote + (int)kernel->morph2SemitoneOffset);
             oscmorph2->freq *= kernel->detuningMultiplierSmooth;
             oscmorph2->freq += kernel->detuningOffset;
             oscmorph2->freq = clamp(oscmorph2->freq, 0.0f, 22050.0f);
