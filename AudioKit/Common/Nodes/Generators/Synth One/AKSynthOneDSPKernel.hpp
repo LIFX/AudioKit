@@ -160,9 +160,9 @@ public:
                 }
             } else {
                 if (stage == stageOff) { add(); }
-                oscmorph1->freq = (float)noteToHz(noteNumber + (int)kernel->morph1SemitoneOffset);
+                oscmorph1->freq = (float)noteToHz(noteNumber + (int)kernel->parameters[morph1SemitoneOffsetAddress]);
                 oscmorph1->amp = (float)pow2(velocity / 127.);
-                oscmorph2->freq = (float)noteToHz(noteNumber + (int)kernel->morph2SemitoneOffset);
+                oscmorph2->freq = (float)noteToHz(noteNumber + (int)kernel->parameters[morph2SemitoneOffsetAddress]);
                 oscmorph2->amp = (float)pow2(velocity / 127.);
                 subOsc->freq = (float)noteToHz(noteNumber);
                 subOsc->amp = (float)pow2(velocity / 127.);
@@ -179,39 +179,39 @@ public:
         
         void run(int frameCount, float *outL, float *outR)
         {
-            float originalFrequency1 = (float)noteToHz(baseNote + (int)kernel->morph1SemitoneOffset);
+            float originalFrequency1 = (float)noteToHz(baseNote + (int)kernel->parameters[morph1SemitoneOffsetAddress]);
             oscmorph1->freq *= kernel->detuningMultiplierSmooth;
             oscmorph1->freq = clamp(oscmorph1->freq, 0.0f, 22050.0f);
-            oscmorph1->wtpos = kernel->index1;
+            oscmorph1->wtpos = kernel->parameters[index1Address];
             
-            float originalFrequency2 = (float)noteToHz(baseNote + (int)kernel->morph2SemitoneOffset);
+            float originalFrequency2 = (float)noteToHz(baseNote + (int)kernel->parameters[morph2SemitoneOffsetAddress]);
             oscmorph2->freq *= kernel->detuningMultiplierSmooth;
-            oscmorph2->freq += kernel->detuningOffset;
+            oscmorph2->freq += kernel->parameters[detuningOffsetAddress];
             oscmorph2->freq = clamp(oscmorph2->freq, 0.0f, 22050.0f);
-            oscmorph2->wtpos = kernel->index2;
+            oscmorph2->wtpos = kernel->parameters[index2Address];
             
             float originalFrequencySub = subOsc->freq;
             subOsc->freq *= kernel->detuningMultiplierSmooth / (2.0 *
-            (1.0 + kernel->subOctaveDown));
+            (1.0 + kernel->parameters[subOctaveDownAddress]));
             
             float originalFrequencyFM = fmOsc->freq;
             fmOsc->freq *= kernel->detuningMultiplierSmooth;
-            fmOsc->indx = kernel->fmAmount;
+            fmOsc->indx = kernel->parameters[fmAmountAddress];
             
-            adsr->atk = (float)kernel->attackDuration;
-            adsr->dec = (float)kernel->decayDuration;
-            adsr->sus = (float)kernel->sustainLevel;
-            adsr->rel = (float)kernel->releaseDuration;
+            adsr->atk = (float)kernel->parameters[attackDurationAddress];
+            adsr->dec = (float)kernel->parameters[decayDurationAddress];
+            adsr->sus = (float)kernel->parameters[sustainLevelAddress];
+            adsr->rel = (float)kernel->parameters[releaseDurationAddress];
             
-            fadsr->atk = (float)kernel->filterAttackDuration;
-            fadsr->dec = (float)kernel->filterDecayDuration;
-            fadsr->sus = (float)kernel->filterSustainLevel;
-            fadsr->rel = (float)kernel->filterReleaseDuration;
+            fadsr->atk = (float)kernel->parameters[filterAttackDurationAddress];
+            fadsr->dec = (float)kernel->parameters[filterDecayDurationAddress];
+            fadsr->sus = (float)kernel->parameters[filterSustainLevelAddress];
+            fadsr->rel = (float)kernel->parameters[filterReleaseDurationAddress];
             
             morphCrossFade->pos = kernel->morphBalanceSmooth;
-            filterCrossFade->pos = kernel->filterMix;
+            filterCrossFade->pos = kernel->parameters[filterMixAddress];
             moog->res = kernel->resonanceSmooth;
-            
+
             for (int frameIndex = 0; frameIndex < frameCount; ++frameIndex) {
                 float oscmorph1_out = 0;
                 float oscmorph2_out = 0;
@@ -227,31 +227,31 @@ public:
                 //                filter *= kernel->filterADSRMix;
                 
                 moog->freq = kernel->cutoffSmooth + kernel->lfoOutput; // basic frequency
-                moog->freq = moog->freq - moog->freq * kernel->filterADSRMix * (1.0 - filter);
+                moog->freq = moog->freq - moog->freq * kernel->parameters[filterADSRMixAddress] * (1.0 - filter);
                 
                 if (moog->freq < 0.0) {
                     moog->freq = 0.0;
                 }
                 
                 sp_oscmorph_compute(kernel->sp, oscmorph1, nil, &oscmorph1_out);
-                oscmorph1_out *= kernel->morph1Volume;
+                oscmorph1_out *= kernel->parameters[morph1VolumeAddress];
                 sp_oscmorph_compute(kernel->sp, oscmorph2, nil, &oscmorph2_out);
-                oscmorph2_out *= kernel->morph2Volume;
+                oscmorph2_out *= kernel->parameters[morph2VolumeAddress];
                 sp_crossfade_compute(kernel->sp, morphCrossFade, &oscmorph1_out, &oscmorph2_out, &osc_morph_out);
                 sp_osc_compute(kernel->sp, subOsc, nil, &subOsc_out);
-                if (kernel->subIsSquare) {
+                if (kernel->parameters[subIsSquareAddress]) {
                     if (subOsc_out > 0) {
-                        subOsc_out = kernel->subVolume;
+                        subOsc_out = kernel->parameters[subVolumeAddress];
                     } else {
-                        subOsc_out = -kernel->subVolume;
+                        subOsc_out = -kernel->parameters[subVolumeAddress];
                     }
                 } else {
-                    subOsc_out *= kernel->subVolume * 2.0; // the 2.0 is to match square's volume
+                    subOsc_out *= kernel->parameters[subVolumeAddress] * 2.0; // the 2.0 is to match square's volume
                 }
                 sp_fosc_compute(kernel->sp, fmOsc, nil, &fmOsc_out);
-                fmOsc_out *= kernel->fmVolume;
+                fmOsc_out *= kernel->parameters[fmVolumeAddress];
                 sp_noise_compute(kernel->sp, noise, nil, &noise_out);
-                noise_out *= kernel->noiseVolume;
+                noise_out *= kernel->parameters[noiseVolumeAddress];
                 
                 float synthOut = amp * (osc_morph_out + subOsc_out + fmOsc_out + noise_out);
                 
@@ -368,30 +368,28 @@ public:
             state.clear();
         }
         playingNotes = nullptr;
-        index1Ramper.reset();
         AKBankDSPKernel::reset();
     }
     
     standardBankKernelFunctions()
 
     void setParameters(float params[]) {
-        for (int i = 0; i < 32; i++) {
+        for (int i = 0; i < 33; i++) {
             parameters[i] = params[i];
         }
     }
 
     void setParameter(AUParameterAddress address, AUValue value) {
-        rampers[address].setUIValue(clamp(value, -100000.0f, 100000.0f)); // AOP Clamping is wrong
+        parameters[address] = value; //clamp(value, -100000.0f, 100000.0f);
     }
 
     AUValue getParameter(AUParameterAddress address) {
-        return rampers[address].getUIValue();
+        return parameters[address];
     }
 
     void startRamp(AUParameterAddress address, AUValue value, AUAudioFrameCount duration) override {
-        rampers[address].startRamp(clamp(value, -100000.0f, 1000000.0f), duration); // AOP clamping is wrong
     }
-    
+
     standardHandleMIDI()
 
     void handleTempoSetting(float currentTempo) {
@@ -406,49 +404,12 @@ public:
         float* outL = (float*)outBufferListPtr->mBuffers[0].mData + bufferOffset;
         float* outR = (float*)outBufferListPtr->mBuffers[1].mData + bufferOffset;
 
-        for (int i = 0; i < 33 ; i++ ) {
-            parameters[i] = double(rampers[i].getAndStep());
-        }
-        index1 = parameters[index1Address];
-        index2 = parameters[index2Address];
-        morphBalance = parameters[morphBalanceAddress];
-        morph1SemitoneOffset = parameters[morph1SemitoneOffsetAddress];
-        morph2SemitoneOffset = parameters[morph2SemitoneOffsetAddress];
-        morph1Volume = parameters[morph1VolumeAddress];
-        morph2Volume = parameters[morph2VolumeAddress];
-        subVolume = parameters[subVolumeAddress];
-        subOctaveDown = parameters[subOctaveDownAddress];
-        subIsSquare = parameters[subIsSquareAddress];
-        fmVolume = parameters[fmVolumeAddress];
-        fmAmount = parameters[fmAmountAddress];
-        noiseVolume = parameters[noiseVolumeAddress];
-        lfoIndex = parameters[lfoIndexAddress];
-        lfoAmplitude = parameters[lfoAmplitudeAddress];
-        lfoRate = parameters[lfoRateAddress];
-        cutoff = parameters[cutoffAddress];
-        resonance = parameters[resonanceAddress];
-        filterMix = parameters[filterMixAddress];
-        filterADSRMix = parameters[filterADSRMixAddress];
-        isMono = parameters[isMonoAddress];
-        glide = parameters[glideAddress];
-        filterAttackDuration = parameters[filterAttackDurationAddress];
-        filterDecayDuration = parameters[filterDecayDurationAddress];
-        filterSustainLevel = parameters[filterSustainLevelAddress];
-        filterReleaseDuration = parameters[filterReleaseDurationAddress];
-        attackDuration = parameters[attackDurationAddress];
-        decayDuration = parameters[decayDurationAddress];
-        sustainLevel = parameters[sustainLevelAddress];
-        releaseDuration = parameters[releaseDurationAddress];
-        detuningOffset = parameters[detuningOffsetAddress];
-        detuningMultiplier = parameters[detuningMultiplierAddress];
-        masterVolume = parameters[masterVolumeAddress];
-
         for (AUAudioFrameCount i = 0; i < frameCount; ++i) {
             outL[i] = 0.0f;
             outR[i] = 0.0f;
         }
         
-        if (isMono == 1) {
+        if (parameters[isMonoAddress] == 1) {
             NSLog(@"WARNING IS MONO");
             if (isMonoSetup == false) {
                 setupMono();
@@ -465,7 +426,7 @@ public:
             }
         }
         
-        lfo->freq = lfoRate;
+        lfo->freq = parameters[lfoRateAddress];
         
         for (AUAudioFrameCount i = 0; i < frameCount; ++i) {
             sp_phasor_compute(sp, lfo, nil, &lfoOutput);
@@ -484,12 +445,12 @@ public:
                 lfoOutput = (0.5 - lfoOutput) * 2.0;
             }
             
-            lfoOutput *= lfoAmplitude;
+            lfoOutput *= parameters[lfoAmplitudeAddress];
             
             sp_port_compute(sp, multiplierPort, &detuningMultiplier, &detuningMultiplierSmooth);
-            sp_port_compute(sp, balancePort, &morphBalance, &morphBalanceSmooth);
-            sp_port_compute(sp, cutoffPort, &cutoff, &cutoffSmooth);
-            sp_port_compute(sp, resonancePort, &resonance, &resonanceSmooth);
+            sp_port_compute(sp, balancePort, &(parameters[morphBalanceAddress]), &morphBalanceSmooth);
+            sp_port_compute(sp, cutoffPort, &(parameters[cutoffAddress]), &cutoffSmooth);
+            sp_port_compute(sp, resonancePort, &(parameters[resonanceAddress]), &resonanceSmooth);
             float synthOut = outL[i];
             float finalOutL = 0.0;
             float finalOutR = 0.0;
@@ -502,8 +463,8 @@ public:
             pan->pan = panValue;
             sp_pan2_compute(sp, pan, &synthOut, &finalOutL, &finalOutR);
             
-            outL[i] = finalOutL * masterVolume;
-            outR[i] = finalOutR * masterVolume;
+            outL[i] = finalOutL * parameters[masterVolumeAddress];
+            outR[i] = finalOutR * parameters[masterVolumeAddress];
 //            outL[i] *= 0.5f;
 //            outR[i] *= 0.5f;
         }
@@ -608,145 +569,5 @@ public:
     sp_crossfade *filterCrossFade;
     
     bool notesHeld = false;
-
-    float index1 = parameters[index1Address];
-    float index2 = parameters[index2Address];
-    float morphBalance = parameters[morphBalanceAddress];
-    float morph1SemitoneOffset = parameters[morph1SemitoneOffsetAddress];
-    float morph2SemitoneOffset = parameters[morph2SemitoneOffsetAddress];
-    float morph1Volume = parameters[morph1VolumeAddress];
-    float morph2Volume = parameters[morph2VolumeAddress];
-    float subVolume = parameters[subVolumeAddress];
-    float subOctaveDown = parameters[subOctaveDownAddress];
-    float subIsSquare = parameters[subIsSquareAddress];
-    float fmVolume = parameters[fmVolumeAddress];
-    float fmAmount = parameters[fmAmountAddress];
-    float noiseVolume = parameters[noiseVolumeAddress];
-    float lfoIndex = parameters[lfoIndexAddress];
-    float lfoAmplitude = parameters[lfoAmplitudeAddress];
-    float lfoRate = parameters[lfoRateAddress];
-    float cutoff = parameters[cutoffAddress];
-    float resonance = parameters[resonanceAddress];
-    float filterMix = parameters[filterMixAddress];
-    float filterADSRMix = parameters[filterADSRMixAddress];
-    float isMono = parameters[isMonoAddress];
-    float glide = parameters[glideAddress];
-    float filterAttackDuration = parameters[filterAttackDurationAddress];
-    float filterDecayDuration = parameters[filterDecayDurationAddress];
-    float filterSustainLevel = parameters[filterSustainLevelAddress];
-    float filterReleaseDuration = parameters[filterReleaseDurationAddress];
-    float masterVolume = parameters[masterVolumeAddress];
-    float attackDuration = parameters[attackDurationAddress];
-    float decayDuration = parameters[decayDurationAddress];
-    float sustainLevel = parameters[sustainLevelAddress];
-    float releaseDuration = parameters[releaseDurationAddress];
-    float detuningOffset = parameters[detuningOffsetAddress];
-    float detuningMultiplier = parameters[detuningMultiplierAddress];
-
-    ParameterRamper index1Ramper = parameters[index1Address];
-    ParameterRamper index2Ramper = parameters[index2Address];
-    ParameterRamper morphBalanceRamper = parameters[morphBalanceAddress];
-    ParameterRamper morph1SemitoneOffsetRamper = parameters[morph1SemitoneOffsetAddress];
-    ParameterRamper morph2SemitoneOffsetRamper = parameters[morph2SemitoneOffsetAddress];
-    ParameterRamper morph1VolumeRamper = parameters[morph1VolumeAddress];
-    ParameterRamper morph2VolumeRamper = parameters[morph2VolumeAddress];
-    ParameterRamper subVolumeRamper = parameters[subVolumeAddress];
-    ParameterRamper subOctaveDownRamper = parameters[subOctaveDownAddress];
-    ParameterRamper subIsSquareRamper = parameters[subIsSquareAddress];
-    ParameterRamper fmVolumeRamper = parameters[fmVolumeAddress];
-    ParameterRamper fmAmountRamper = parameters[fmAmountAddress];
-    ParameterRamper noiseVolumeRamper = parameters[noiseVolumeAddress];
-    ParameterRamper lfoIndexRamper = parameters[lfoIndexAddress];
-    ParameterRamper lfoAmplitudeRamper = parameters[lfoAmplitudeAddress];
-    ParameterRamper lfoRateRamper = parameters[lfoRateAddress];
-    ParameterRamper cutoffRamper = parameters[cutoffAddress];
-    ParameterRamper resonanceRamper = parameters[resonanceAddress];
-    ParameterRamper filterMixRamper = parameters[filterMixAddress];
-    ParameterRamper filterADSRMixRamper = parameters[filterADSRMixAddress];
-    ParameterRamper isMonoRamper = parameters[isMonoAddress];
-    ParameterRamper glideRamper = parameters[glideAddress];
-    ParameterRamper filterAttackDurationRamper = parameters[filterAttackDurationAddress];
-    ParameterRamper filterDecayDurationRamper = parameters[filterDecayDurationAddress];
-    ParameterRamper filterSustainLevelRamper = parameters[filterSustainLevelAddress];
-    ParameterRamper filterReleaseDurationRamper = parameters[filterReleaseDurationAddress];
-    ParameterRamper attackDurationRamper = parameters[attackDurationAddress];
-    ParameterRamper decayDurationRamper =  parameters[decayDurationAddress];
-    ParameterRamper sustainLevelRamper = parameters[sustainLevelAddress];
-    ParameterRamper releaseDurationRamper = parameters[releaseDurationAddress];
-    ParameterRamper detuningOffsetRamper = parameters[detuningOffsetAddress];
-    ParameterRamper detuningMultiplierParameterRamper = parameters[detuningMultiplierAddress];
-    ParameterRamper masterVolumeRamper = parameters[masterVolumeAddress];
-
-    float parameterValues[33] = {
-        index1,
-        index2,
-        morphBalance,
-        morph1SemitoneOffset,
-        morph2SemitoneOffset,
-        morph1Volume,
-        morph2Volume,
-        subVolume,
-        subOctaveDown,
-        subIsSquare,
-        fmVolume,
-        fmAmount,
-        noiseVolume,
-        lfoIndex,
-        lfoAmplitude,
-        lfoRate,
-        cutoff,
-        resonance,
-        filterMix,
-        filterADSRMix,
-        isMono,
-        glide,
-        filterAttackDuration,
-        filterDecayDuration,
-        filterSustainLevel,
-        filterReleaseDuration,
-        attackDuration,
-        decayDuration,
-        sustainLevel,
-        releaseDuration,
-        detuningOffset,
-        detuningMultiplier,
-        masterVolume
-    };
-    
-    ParameterRamper rampers[33] = {
-        index1Ramper,
-        index2Ramper,
-        morphBalanceRamper,
-        morph1SemitoneOffsetRamper,
-        morph2SemitoneOffsetRamper,
-        morph1VolumeRamper,
-        morph2VolumeRamper,
-        subVolumeRamper,
-        subOctaveDownRamper,
-        subIsSquareRamper,
-        fmVolumeRamper,
-        fmAmountRamper,
-        noiseVolumeRamper,
-        lfoIndexRamper,
-        lfoAmplitudeRamper,
-        lfoRateRamper,
-        cutoffRamper,
-        resonanceRamper,
-        filterMixRamper,
-        filterADSRMixRamper,
-        isMonoRamper,
-        glideRamper,
-        filterAttackDurationRamper,
-        filterDecayDurationRamper,
-        filterSustainLevelRamper,
-        filterReleaseDurationRamper,
-        attackDurationRamper,
-        decayDurationRamper,
-        sustainLevelRamper,
-        releaseDurationRamper,
-        detuningOffsetRamper,
-        detuningMultiplierRamper,
-        masterVolume
-    };
 };
 
