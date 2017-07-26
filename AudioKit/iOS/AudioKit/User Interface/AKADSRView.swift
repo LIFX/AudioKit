@@ -108,6 +108,11 @@ import UIKit
         backgroundColor = .clear
     }
 
+    /// Initialization with no details (required for interface builder!)
+    override public init(frame: CGRect) {
+        super.init(frame: frame)
+    }
+
     /// Initialization of the view from within interface builder
     required public init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
