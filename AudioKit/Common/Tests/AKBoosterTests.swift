@@ -33,5 +33,19 @@ class AKBoosterTests: AKTestCase {
         AKTestMD5("b6e42381963b1047cb4890e6c0da29f3")
     }
 
+    func testLeftGain() {
+        let booster = AKBooster(input)
+        booster.leftGain = 0.7
+        output = booster
+        AKTestMD5("9e4672ac089b5eca3c306f674132303c")
+    }
+
+    func testRightGain() {
+        let booster = AKBooster(input)
+        booster.rightGain = 0.7
+        output = booster
+        AKTestMD5("72965c2afb301d39446bcb921da2cd5c")
+    }
+
 
 }
