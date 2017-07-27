@@ -56,221 +56,33 @@ standardBankFunctions()
     standardGeneratorSetup(SynthOne)
     standardBankParameters()
     
-    AUParameter *index1AUParameter =
-    [AUParameter parameter:@"index1"
-                      name:@"Index 1"
-                   address:index1Address
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *index2AUParameter =
-    [AUParameter parameter:@"index2"
-                      name:@"Index 2"
-                   address:index2Address
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *morphBalanceAUParameter =
-    [AUParameter parameter:@"morphBalance"
-                      name:@"Morph Balance"
-                   address:morphBalanceAddress
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *morph1SemitoneOffsetAUParameter =
-    [AUParameter parameter:@"morph1SemitoneOffset"
-                      name:@"Morph 1 Semitone Offset"
-                   address:morph1SemitoneOffsetAddress
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *morph2SemitoneOffsetAUParameter =
-    [AUParameter parameter:@"morph2SemitoneOffset"
-                      name:@"Morph 2 Semitone Offset"
-                   address:morph2SemitoneOffsetAddress
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *morph1VolumeAUParameter =
-    [AUParameter parameter:@"morph1Volume"
-                      name:@"Morph 1 Volume"
-                   address:morph1VolumeAddress
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *morph2VolumeAUParameter =
-    [AUParameter parameter:@"morph2Volume"
-                      name:@"Morph 2 Volume"
-                   address:morph2VolumeAddress
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *subVolumeAUParameter =
-    [AUParameter parameter:@"subVolume"
-                      name:@"Sub Volume"
-                   address:subVolumeAddress
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *subOctaveDownAUParameter =
-    [AUParameter parameter:@"subOctaveDown"
-                      name:@"Sub Octave Down"
-                   address:subOctaveDownAddress
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *subIsSquareAUParameter =
-    [AUParameter parameter:@"subIsSquare"
-                      name:@"Sub Is Square"
-                   address:subIsSquareAddress
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *fmVolumeAUParameter =
-    [AUParameter parameter:@"fmVolume"
-                      name:@"FM Volume"
-                   address:fmVolumeAddress
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *fmAmountAUParameter =
-    [AUParameter parameter:@"fmAmount"
-                      name:@"FM Amont"
-                   address:fmAmountAddress
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *noiseVolumeAUParameter =
-    [AUParameter parameter:@"noiseVolume"
-                      name:@"Noise Volume"
-                   address:noiseVolumeAddress
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *lfoIndexAUParameter =
-    [AUParameter parameter:@"lfoIndex"
-                      name:@"LFO Index"
-                   address:lfoIndexAddress
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *lfoAmplitudeAUParameter =
-    [AUParameter parameter:@"lfoAmplitude"
-                      name:@"LFO Amplitude"
-                   address:lfoAmplitudeAddress
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *lfoRateAUParameter =
-    [AUParameter parameter:@"lfoRate"
-                      name:@"LFO Rate"
-                   address:lfoRateAddress
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *cutoffAUParameter =
-    [AUParameter parameter:@"cutoff"
-                      name:@"Cutoff"
-                   address:cutoffAddress
-                       min:0.0
-                       max:22000
-                      unit:kAudioUnitParameterUnit_Hertz];
-    
-    AUParameter *resonanceAUParameter =
-    [AUParameter parameter:@"resonance"
-                      name:@"Resonance"
-                   address:resonanceAddress
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *filterMixAUParameter =
-    [AUParameter parameter:@"filterMix"
-                      name:@"Filter Mix"
-                   address:filterMixAddress
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *filterADSRMixAUParameter =
-    [AUParameter parameter:@"filterADSRMix"
-                      name:@"Filter ADSR Mix"
-                   address:filterADSRMixAddress
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *isMonoAUParameter =
-    [AUParameter parameter:@"isMono"
-                      name:@"Is Mono"
-                   address:isMonoAddress
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *glideAUParameter =
-    [AUParameter parameter:@"glide"
-                      name:@"Glide"
-                   address:glideAddress
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *filterAttackDurationAUParameter =
-    [AUParameter parameter:@"filterAttackDuration"
-                      name:@"Filter Attack Duration"
-                   address:filterAttackDurationAddress
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *filterDecayDurationAUParameter =
-    [AUParameter parameter:@"filterDecayDuration"
-                      name:@"Filter Decay Duration"
-                   address:filterDecayDurationAddress
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *filterSustainLevelAUParameter =
-    [AUParameter parameter:@"filterSustainLevel"
-                      name:@"Filter Sustain Level"
-                   address:filterSustainLevelAddress
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *filterReleaseDurationAUParameter =
-    [AUParameter parameter:@"filterReleaseDuration"
-                      name:@"Filter Release Duration"
-                   address:filterReleaseDurationAddress
-                       min:0.0
-                       max:1.0
-                      unit:kAudioUnitParameterUnit_Generic];
-    
-    AUParameter *masterVolumeAUParameter =
-    [AUParameter parameter:@"masterVolume"
-                      name:@"masterVolume"
-                   address:masterVolumeAddress
-                       min:0.0
-                       max:2.0
-                      unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *index1AUParameter =                [AUParameter parameter:@"index1"                name:@"Index 1"                 address:index1Address                min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *index2AUParameter =                [AUParameter parameter:@"index2"                name:@"Index 2"                 address:index2Address                min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *morphBalanceAUParameter =          [AUParameter parameter:@"morphBalance"          name:@"Morph Balance"           address:morphBalanceAddress          min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *morph1SemitoneOffsetAUParameter =  [AUParameter parameter:@"morph1SemitoneOffset"  name:@"Morph 1 Semitone Offset" address:morph1SemitoneOffsetAddress  min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *morph2SemitoneOffsetAUParameter =  [AUParameter parameter:@"morph2SemitoneOffset"  name:@"Morph 2 Semitone Offset" address:morph2SemitoneOffsetAddress  min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *morph1VolumeAUParameter =          [AUParameter parameter:@"morph1Volume"          name:@"Morph 1 Volume"          address:morph1VolumeAddress          min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *morph2VolumeAUParameter =          [AUParameter parameter:@"morph2Volume"          name:@"Morph 2 Volume"          address:morph2VolumeAddress          min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *subVolumeAUParameter =             [AUParameter parameter:@"subVolume"             name:@"Sub Volume"              address:subVolumeAddress             min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *subOctaveDownAUParameter =         [AUParameter parameter:@"subOctaveDown"         name:@"Sub Octave Down"         address:subOctaveDownAddress         min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *subIsSquareAUParameter =           [AUParameter parameter:@"subIsSquare"           name:@"Sub Is Square"           address:subIsSquareAddress           min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *fmVolumeAUParameter =              [AUParameter parameter:@"fmVolume"              name:@"FM Volume"               address:fmVolumeAddress              min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *fmAmountAUParameter =              [AUParameter parameter:@"fmAmount"              name:@"FM Amont"                address:fmAmountAddress              min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *noiseVolumeAUParameter =           [AUParameter parameter:@"noiseVolume"           name:@"Noise Volume"            address:noiseVolumeAddress           min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *lfoIndexAUParameter =              [AUParameter parameter:@"lfoIndex"              name:@"LFO Index"               address:lfoIndexAddress              min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *lfoAmplitudeAUParameter =          [AUParameter parameter:@"lfoAmplitude"          name:@"LFO Amplitude"           address:lfoAmplitudeAddress          min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *lfoRateAUParameter =               [AUParameter parameter:@"lfoRate"               name:@"LFO Rate"                address:lfoRateAddress               min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *cutoffAUParameter =                [AUParameter parameter:@"cutoff"                name:@"Cutoff"                  address:cutoffAddress                min:0.0 max:22000 unit:kAudioUnitParameterUnit_Hertz];
+    AUParameter *resonanceAUParameter =             [AUParameter parameter:@"resonance"             name:@"Resonance"               address:resonanceAddress             min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *filterMixAUParameter =             [AUParameter parameter:@"filterMix"             name:@"Filter Mix"              address:filterMixAddress             min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *filterADSRMixAUParameter =         [AUParameter parameter:@"filterADSRMix"         name:@"Filter ADSR Mix"         address:filterADSRMixAddress         min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *isMonoAUParameter =                [AUParameter parameter:@"isMono"                name:@"Is Mono"                 address:isMonoAddress                min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *glideAUParameter =                 [AUParameter parameter:@"glide"                 name:@"Glide"                   address:glideAddress                 min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *filterAttackDurationAUParameter =  [AUParameter parameter:@"filterAttackDuration"  name:@"Filter Attack Duration"  address:filterAttackDurationAddress  min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *filterDecayDurationAUParameter =   [AUParameter parameter:@"filterDecayDuration"   name:@"Filter Decay Duration"   address:filterDecayDurationAddress   min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *filterSustainLevelAUParameter =    [AUParameter parameter:@"filterSustainLevel"    name:@"Filter Sustain Level"    address:filterSustainLevelAddress    min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *filterReleaseDurationAUParameter = [AUParameter parameter:@"filterReleaseDuration" name:@"Filter Release Duration" address:filterReleaseDurationAddress min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *masterVolumeAUParameter =          [AUParameter parameter:@"masterVolume"          name:@"masterVolume"            address:masterVolumeAddress          min:0.0 max:2.0   unit:kAudioUnitParameterUnit_Generic];
     
     // Initialize the parameter values.
     index1AUParameter.value = 0;
