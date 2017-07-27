@@ -447,7 +447,7 @@ public:
             
             lfoOutput *= parameters[lfoAmplitudeAddress];
             
-            sp_port_compute(sp, multiplierPort, &detuningMultiplier, &detuningMultiplierSmooth);
+            sp_port_compute(sp, multiplierPort, &(parameters[detuningMultiplierAddress]), &detuningMultiplierSmooth);
             sp_port_compute(sp, balancePort, &(parameters[morphBalanceAddress]), &morphBalanceSmooth);
             sp_port_compute(sp, cutoffPort, &(parameters[cutoffAddress]), &cutoffSmooth);
             sp_port_compute(sp, resonancePort, &(parameters[resonanceAddress]), &resonanceSmooth);
