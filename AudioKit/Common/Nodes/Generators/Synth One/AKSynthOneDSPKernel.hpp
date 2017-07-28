@@ -336,10 +336,12 @@ public:
         sp_smoothdelay_create(&delayL);
         sp_smoothdelay_create(&delayR);
         sp_smoothdelay_create(&delayRR);
+        sp_smoothdelay_create(&delayFillIn);
 
         sp_smoothdelay_init(sp, delayL, 5.0, 512);
         sp_smoothdelay_init(sp, delayR, 5.0, 512);
         sp_smoothdelay_init(sp, delayRR, 5.0, 512);
+        sp_smoothdelay_init(sp, delayFillIn, 5.0, 512);
 
         sp_crossfade_create(&delayCrossfadeL);
         sp_crossfade_create(&delayCrossfadeR);
@@ -556,15 +558,18 @@ public:
             float delayOutL = 0.0;
             float delayOutR = 0.0;
             float delayOutRR = 0.0;
+            float delayFillInOut = 0.0;
 
-            delayL->del  = p[delayTime];
+            delayL->del = p[delayTime];
             delayR->del = p[delayTime];
             delayRR->del = p[delayTime]/2.0;
+            delayFillIn->del = p[delayTime]/2.0;
             delayL->feedback = p[delayFeedback];
             delayR->feedback = p[delayFeedback];
 
             sp_smoothdelay_compute(sp, delayL, &panL, &delayOutL);
             sp_smoothdelay_compute(sp, delayR, &panR, &delayOutR);
+            sp_smoothdelay_compute(sp, delayFillIn, &panR, &delayFillInOut);
             sp_smoothdelay_compute(sp, delayRR, &delayOutR, &delayOutRR);
 
             float mixedDelayL = 0.0;
@@ -573,6 +578,8 @@ public:
             delayCrossfadeR->pos = p[delayMix] * p[delayOn];
             sp_crossfade_compute(sp, delayCrossfadeL, &panL, &delayOutL, &mixedDelayL);
             sp_crossfade_compute(sp, delayCrossfadeR, &panR, &delayOutRR, &mixedDelayR);
+
+            mixedDelayR += delayFillInOut;
 
             float revOutL = 0.0;
             float revOutR = 0.0;
@@ -614,6 +621,7 @@ private:
     sp_smoothdelay *delayL;
     sp_smoothdelay *delayR;
     sp_smoothdelay *delayRR;
+    sp_smoothdelay *delayFillIn;
 
     sp_crossfade *delayCrossfadeL;
     sp_crossfade *delayCrossfadeR;
