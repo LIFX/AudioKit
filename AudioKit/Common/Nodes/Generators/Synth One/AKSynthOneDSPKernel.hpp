@@ -61,7 +61,11 @@ enum {
     reverbOn = 37,
     reverbFeedback = 38,
     reverbCutoff = 39,
-    reverbMix = 40
+    reverbMix = 40,
+    delayOn = 41,
+    delayFeedback = 42,
+    delayTime = 43,
+    delayMix = 44
 };
 
 class AKSynthOneDSPKernel : public AKSoundpipeKernel, public AKOutputBuffered {
@@ -328,6 +332,20 @@ public:
         sp_osc_init(sp, panOscillator, sine, 0.0);
         sp_pan2_create(&pan);
         sp_pan2_init(sp, pan);
+
+        sp_smoothdelay_create(&delayL);
+        sp_smoothdelay_create(&delayR);
+        sp_smoothdelay_create(&delayRR);
+
+        sp_smoothdelay_init(sp, delayL, 5.0, 512);
+        sp_smoothdelay_init(sp, delayR, 5.0, 512);
+        sp_smoothdelay_init(sp, delayRR, 5.0, 512);
+
+        sp_crossfade_create(&delayCrossfadeL);
+        sp_crossfade_create(&delayCrossfadeR);
+        sp_crossfade_init(sp, delayCrossfadeL);
+        sp_crossfade_init(sp, delayCrossfadeR);
+
         sp_revsc_create(&revsc);
         sp_revsc_init(sp, revsc);
         sp_crossfade_create(&revCrossfadeL);
@@ -410,7 +428,7 @@ public:
 //    standardBankKernelFunctions()
 
     void setParameters(float params[]) {
-        for (int i = 0; i < 41; i++) {
+        for (int i = 0; i < 45; i++) {
             p[i] = params[i];
         }
     }
@@ -535,19 +553,40 @@ public:
             pan->pan = panValue;
             sp_pan2_compute(sp, pan, &bitCrushOut, &panL, &panR);
 
+            float delayOutL = 0.0;
+            float delayOutR = 0.0;
+            float delayOutRR = 0.0;
+
+            delayL->del  = p[delayTime];
+            delayR->del = p[delayTime];
+            delayRR->del = p[delayTime]/2.0;
+            delayL->feedback = p[delayFeedback];
+            delayR->feedback = p[delayFeedback];
+
+            sp_smoothdelay_compute(sp, delayL, &panL, &delayOutL);
+            sp_smoothdelay_compute(sp, delayR, &panR, &delayOutR);
+            sp_smoothdelay_compute(sp, delayRR, &delayOutR, &delayOutRR);
+
+            float mixedDelayL = 0.0;
+            float mixedDelayR = 0.0;
+            delayCrossfadeL->pos = p[delayMix] * p[delayOn];
+            delayCrossfadeR->pos = p[delayMix] * p[delayOn];
+            sp_crossfade_compute(sp, delayCrossfadeL, &panL, &delayOutL, &mixedDelayL);
+            sp_crossfade_compute(sp, delayCrossfadeR, &panR, &delayOutRR, &mixedDelayR);
+
             float revOutL = 0.0;
             float revOutR = 0.0;
             revsc->lpfreq = p[reverbCutoff];
             revsc->feedback = p[reverbFeedback];
             
-            sp_revsc_compute(sp, revsc, &panL, &panR, &revOutL, &revOutR);
+            sp_revsc_compute(sp, revsc, &mixedDelayL, &mixedDelayR, &revOutL, &revOutR);
 
             float finalOutL = 0.0;
             float finalOutR = 0.0;
             revCrossfadeL->pos = p[reverbMix] * p[reverbOn];
             revCrossfadeR->pos = p[reverbMix] * p[reverbOn];
-            sp_crossfade_compute(sp, revCrossfadeL, &panL, &revOutL, &finalOutL);
-            sp_crossfade_compute(sp, revCrossfadeR, &panR, &revOutR, &finalOutR);
+            sp_crossfade_compute(sp, revCrossfadeL, &mixedDelayL, &revOutL, &finalOutL);
+            sp_crossfade_compute(sp, revCrossfadeR, &mixedDelayR, &revOutR, &finalOutR);
 
             outL[i] = finalOutL * p[masterVolume];
             outR[i] = finalOutR * p[masterVolume];
@@ -568,8 +607,17 @@ private:
     sp_ftbl *sine;
     sp_phasor *lfo;
     sp_bitcrush *bitcrush;
+
     sp_pan2 *pan;
     sp_osc *panOscillator;
+
+    sp_smoothdelay *delayL;
+    sp_smoothdelay *delayR;
+    sp_smoothdelay *delayRR;
+
+    sp_crossfade *delayCrossfadeL;
+    sp_crossfade *delayCrossfadeR;
+
     sp_revsc *revsc;
     sp_crossfade *revCrossfadeL;
     sp_crossfade *revCrossfadeR;
@@ -590,7 +638,7 @@ public:
 
     bool resetted = false;
 
-    float p[41] = {
+    float p[45] = {
         0, // index1
         0, // index2
         0.5, // morphBalance
@@ -631,7 +679,11 @@ public:
         0, // reverbOn
         0, // reverbFeedback
         1000, // reverbCutoff
-        0 // reverbMix
+        0, // reverbMix
+        0, // delayOn
+        0, // delayTime
+        0, // delayFeedback
+        0 // delayMix
     };
 
     // Ported values

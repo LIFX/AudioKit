@@ -22,15 +22,15 @@
 @synthesize parameterTree = _parameterTree;
 
 - (NSArray *)parameters {
-    NSMutableArray *temp = [NSMutableArray arrayWithCapacity:41];
-    for (int i = 0; i < 41; i++) {
+    NSMutableArray *temp = [NSMutableArray arrayWithCapacity:45];
+    for (int i = 0; i < 45; i++) {
         [temp setObject:[NSNumber numberWithFloat:_kernel.p[i]] atIndexedSubscript:i];
     }
     return [NSArray arrayWithArray:temp];
 }
 
 - (void)setParameters:(NSArray *)parameters {
-    float params[41] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    float params[45] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     for (int i = 0; i < parameters.count; i++) {
         params[i] = [parameters[i] floatValue];
     }
@@ -101,6 +101,10 @@
     AUParameter *reverbFeedbackAU =        [AUParameter parameter:@"reverbFeedback"        name:@"Reverb Feedback"         address:reverbFeedback        min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
     AUParameter *reverbCutoffAU =          [AUParameter parameter:@"reverbCutoff"          name:@"Reverb Cutoff"           address:reverbCutoff          min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Hertz];
     AUParameter *reverbMixAU =             [AUParameter parameter:@"reverbMix"             name:@"Reverb Mix"              address:reverbMix             min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *delayOnAU =               [AUParameter parameter:@"delayOn"               name:@"Delay On"                address:delayOn               min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *delayFeedbackAU =         [AUParameter parameter:@"delayFeedback"         name:@"Delay Feedback"          address:delayFeedback         min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *delayTimeAU =             [AUParameter parameter:@"delayTime"             name:@"Delay Time"              address:delayTime             min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *delayMixAU =              [AUParameter parameter:@"delayMix"              name:@"Delay Mix"               address:delayMix              min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
 
     // Initialize the parameter values.
     index1AU.value = 0;
@@ -144,6 +148,10 @@
     reverbFeedbackAU.value = 0;
     reverbCutoffAU.value = 1000;
     reverbMixAU.value = 0;
+    delayOnAU.value = 0;
+    delayFeedbackAU.value = 0;
+    delayTimeAU.value = 0;
+    delayMixAU.value = 0;
 
     _kernel.setParameter(index1, index1AU.value);
     _kernel.setParameter(index2, index2AU.value);
@@ -186,6 +194,10 @@
     _kernel.setParameter(reverbFeedback, reverbFeedbackAU.value);
     _kernel.setParameter(reverbCutoff, reverbCutoffAU.value);
     _kernel.setParameter(reverbMix, reverbMixAU.value);
+    _kernel.setParameter(delayOn, delayOnAU.value);
+    _kernel.setParameter(delayFeedback, delayFeedbackAU.value);
+    _kernel.setParameter(delayTime, delayTimeAU.value);
+    _kernel.setParameter(delayMix, delayMixAU.value);
 
     // Create the parameter tree.
     _parameterTree = [AUParameterTree createTreeWithChildren:@[
@@ -229,7 +241,11 @@
         reverbOnAU,
         reverbFeedbackAU,
         reverbCutoffAU,
-        reverbMixAU
+        reverbMixAU,
+        delayOnAU,
+        delayFeedbackAU,
+        delayTimeAU,
+        delayMixAU
     ]];
 
     parameterTreeBlock(SynthOne)
