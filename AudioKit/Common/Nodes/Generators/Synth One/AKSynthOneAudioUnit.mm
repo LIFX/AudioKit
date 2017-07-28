@@ -99,7 +99,7 @@
     AUParameter *autoPanFrequencyAU =      [AUParameter parameter:@"autoPanFrequency"      name:@"Auto Pan Frequency"      address:autoPanFrequency      min:0.0 max:10.0  unit:kAudioUnitParameterUnit_Hertz];
     AUParameter *reverbOnAU =              [AUParameter parameter:@"reverbOn"              name:@"Reverb On"               address:reverbOn              min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
     AUParameter *reverbFeedbackAU =        [AUParameter parameter:@"reverbFeedback"        name:@"Reverb Feedback"         address:reverbFeedback        min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *reverbCutoffAU =          [AUParameter parameter:@"reverbCutoff"          name:@"Reverb Cutoff"           address:reverbCutoff          min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Hertz];
+    AUParameter *reverbHighPassAU =        [AUParameter parameter:@"reverbHighPass"        name:@"Reverb HighPass"         address:reverbHighPass        min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Hertz];
     AUParameter *reverbMixAU =             [AUParameter parameter:@"reverbMix"             name:@"Reverb Mix"              address:reverbMix             min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
     AUParameter *delayOnAU =               [AUParameter parameter:@"delayOn"               name:@"Delay On"                address:delayOn               min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
     AUParameter *delayFeedbackAU =         [AUParameter parameter:@"delayFeedback"         name:@"Delay Feedback"          address:delayFeedback         min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
@@ -146,7 +146,7 @@
     autoPanFrequencyAU.value = 0;
     reverbOnAU.value = 0;
     reverbFeedbackAU.value = 0;
-    reverbCutoffAU.value = 1000;
+    reverbHighPassAU.value = 1000;
     reverbMixAU.value = 0;
     delayOnAU.value = 0;
     delayFeedbackAU.value = 0;
@@ -192,7 +192,7 @@
     _kernel.setParameter(autoPanFrequency, autoPanFrequencyAU.value);
     _kernel.setParameter(reverbOn, reverbOnAU.value);
     _kernel.setParameter(reverbFeedback, reverbFeedbackAU.value);
-    _kernel.setParameter(reverbCutoff, reverbCutoffAU.value);
+    _kernel.setParameter(reverbHighPass, reverbHighPassAU.value);
     _kernel.setParameter(reverbMix, reverbMixAU.value);
     _kernel.setParameter(delayOn, delayOnAU.value);
     _kernel.setParameter(delayFeedback, delayFeedbackAU.value);
@@ -240,7 +240,7 @@
         autoPanFrequencyAU,
         reverbOnAU,
         reverbFeedbackAU,
-        reverbCutoffAU,
+        reverbHighPassAU,
         reverbMixAU,
         delayOnAU,
         delayFeedbackAU,

@@ -60,7 +60,7 @@ enum {
     autoPanFrequency = 36,
     reverbOn = 37,
     reverbFeedback = 38,
-    reverbCutoff = 39,
+    reverbHighPass = 39,
     reverbMix = 40,
     delayOn = 41,
     delayFeedback = 42,
@@ -350,6 +350,10 @@ public:
 
         sp_revsc_create(&revsc);
         sp_revsc_init(sp, revsc);
+        sp_buthp_create(&buthpL);
+        sp_buthp_init(sp, buthpL);
+        sp_buthp_create(&buthpR);
+        sp_buthp_init(sp, buthpR);
         sp_crossfade_create(&revCrossfadeL);
         sp_crossfade_create(&revCrossfadeR);
         sp_crossfade_init(sp, revCrossfadeL);
@@ -572,6 +576,8 @@ public:
             sp_smoothdelay_compute(sp, delayFillIn, &panR, &delayFillInOut);
             sp_smoothdelay_compute(sp, delayRR, &delayOutR, &delayOutRR);
 
+            delayOutRR += delayFillInOut;
+
             float mixedDelayL = 0.0;
             float mixedDelayR = 0.0;
             delayCrossfadeL->pos = p[delayMix] * p[delayOn];
@@ -579,21 +585,29 @@ public:
             sp_crossfade_compute(sp, delayCrossfadeL, &panL, &delayOutL, &mixedDelayL);
             sp_crossfade_compute(sp, delayCrossfadeR, &panR, &delayOutRR, &mixedDelayR);
 
-            mixedDelayR += delayFillInOut;
 
             float revOutL = 0.0;
             float revOutR = 0.0;
-            revsc->lpfreq = p[reverbCutoff];
+//            revsc->lpfreq = p[reverbCutoff];
             revsc->feedback = p[reverbFeedback];
             
             sp_revsc_compute(sp, revsc, &mixedDelayL, &mixedDelayR, &revOutL, &revOutR);
+
+            float butOutL = 0.0;
+            float butOutR = 0.0;
+
+            buthpL->freq = p[reverbHighPass];
+            buthpR->freq = p[reverbHighPass];
+            sp_buthp_compute(sp, buthpL, &revOutL, &butOutL);
+            sp_buthp_compute(sp, buthpL, &revOutL, &butOutL);
+
 
             float finalOutL = 0.0;
             float finalOutR = 0.0;
             revCrossfadeL->pos = p[reverbMix] * p[reverbOn];
             revCrossfadeR->pos = p[reverbMix] * p[reverbOn];
-            sp_crossfade_compute(sp, revCrossfadeL, &mixedDelayL, &revOutL, &finalOutL);
-            sp_crossfade_compute(sp, revCrossfadeR, &mixedDelayR, &revOutR, &finalOutR);
+            sp_crossfade_compute(sp, revCrossfadeL, &mixedDelayL, &butOutL, &finalOutL);
+            sp_crossfade_compute(sp, revCrossfadeR, &mixedDelayR, &butOutR, &finalOutR);
 
             outL[i] = finalOutL * p[masterVolume];
             outR[i] = finalOutR * p[masterVolume];
@@ -627,8 +641,11 @@ private:
     sp_crossfade *delayCrossfadeR;
 
     sp_revsc *revsc;
+    sp_buthp *buthpL;
+    sp_buthp *buthpR;
     sp_crossfade *revCrossfadeL;
     sp_crossfade *revCrossfadeR;
+
 
     float lfoOutput = 0.0;
     
@@ -686,7 +703,7 @@ public:
         0, // autoPanFrequency
         0, // reverbOn
         0, // reverbFeedback
-        1000, // reverbCutoff
+        1000, // reverbHighPass
         0, // reverbMix
         0, // delayOn
         0, // delayTime
