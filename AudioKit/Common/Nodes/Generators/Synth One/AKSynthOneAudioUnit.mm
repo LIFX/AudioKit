@@ -23,14 +23,14 @@
 
 - (NSArray *)parameters {
     NSMutableArray *temp = [NSMutableArray arrayWithCapacity:35];
-    for (int i = 0; i < 35; i++) {
+    for (int i = 0; i < 37; i++) {
         [temp setObject:[NSNumber numberWithFloat:_kernel.p[i]] atIndexedSubscript:i];
     }
     return [NSArray arrayWithArray:temp];
 }
 
 - (void)setParameters:(NSArray *)parameters {
-    float params[35] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    float params[37] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     for (int i = 0; i < parameters.count; i++) {
         params[i] = [parameters[i] floatValue];
     }
@@ -95,6 +95,8 @@
     AUParameter *masterVolumeAU =          [AUParameter parameter:@"masterVolume"          name:@"Master Volume"           address:masterVolume          min:0.0 max:2.0   unit:kAudioUnitParameterUnit_Generic];
     AUParameter *bitCrushDepthAU =         [AUParameter parameter:@"bitCrushDepth"         name:@"Bit Depth"               address:bitCrushDepth         min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
     AUParameter *bitCrushSampleRateAU =    [AUParameter parameter:@"bitCrushSampleRate"    name:@"Sample Rate"             address:bitCrushSampleRate    min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *autoPanOnAU =             [AUParameter parameter:@"autoPanOn"             name:@"Auto Pan On"             address:autoPanOn             min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *autoPanFrequencyAU =      [AUParameter parameter:@"autoPanFrequency"      name:@"Auto Pan Frequency"      address:autoPanFrequency      min:0.0 max:10.0  unit:kAudioUnitParameterUnit_Hertz];
 
     // Initialize the parameter values.
     index1AU.value = 0;
@@ -132,6 +134,8 @@
     masterVolumeAU.value = 0.8;
     bitCrushDepthAU.value = 24;
     bitCrushSampleRateAU.value = 44100;
+    autoPanOnAU.value = 0;
+    autoPanFrequencyAU.value = 0;
     
     _kernel.setParameter(index1, index1AU.value);
     _kernel.setParameter(index2, index2AU.value);
@@ -168,6 +172,8 @@
     _kernel.setParameter(masterVolume, masterVolumeAU.value);
     _kernel.setParameter(bitCrushDepth, bitCrushDepthAU.value);
     _kernel.setParameter(bitCrushSampleRate, bitCrushSampleRateAU.value);
+    _kernel.setParameter(autoPanOn, autoPanOnAU.value);
+    _kernel.setParameter(autoPanFrequency, autoPanFrequencyAU.value);
 
     // Create the parameter tree.
     _parameterTree = [AUParameterTree createTreeWithChildren:@[
@@ -205,7 +211,9 @@
         detuningMultiplierAU,
         masterVolumeAU,
         bitCrushDepthAU,
-        bitCrushSampleRateAU
+        bitCrushSampleRateAU,
+        autoPanOnAU,
+        autoPanFrequencyAU
     ]];
 
     parameterTreeBlock(SynthOne)

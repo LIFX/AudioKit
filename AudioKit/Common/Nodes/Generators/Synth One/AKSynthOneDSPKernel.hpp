@@ -55,7 +55,9 @@ enum {
     detuningMultiplier = 31,
     masterVolume = 32,
     bitCrushDepth = 33,
-    bitCrushSampleRate = 34
+    bitCrushSampleRate = 34,
+    autoPanOn = 35,
+    autoPanFrequency = 36
 };
 
 class AKSynthOneDSPKernel : public AKSoundpipeKernel, public AKOutputBuffered {
@@ -398,7 +400,7 @@ public:
 //    standardBankKernelFunctions()
 
     void setParameters(float params[]) {
-        for (int i = 0; i < 35; i++) {
+        for (int i = 0; i < 37; i++) {
             p[i] = params[i];
         }
     }
@@ -517,8 +519,8 @@ public:
             float finalOutR = 0.0;
 
             float panValue = 0.0;
-            panOscillator->freq = 2.0;
-            panOscillator->amp = 1.0;
+            panOscillator->freq = p[autoPanFrequency];
+            panOscillator->amp = p[autoPanOn];
             sp_osc_compute(sp, panOscillator, nil, &panValue);
             pan->pan = panValue;
             sp_pan2_compute(sp, pan, &bitCrushOut, &finalOutL, &finalOutR);
@@ -561,7 +563,7 @@ public:
 
     bool resetted = false;
 
-    float p[35] = {
+    float p[37] = {
         0, // index1
         0, // index2
         0.5, // morphBalance
@@ -596,7 +598,9 @@ public:
         1, // detuningMultiplier
         0.8, // masterVolume
         24, // bitDepth
-        44100 //sampleRate
+        44100, // sampleRate
+        0, // autoPanOn
+        0 // autoPanFrequency
     };
 
     // Ported values
