@@ -22,22 +22,27 @@
 @synthesize parameterTree = _parameterTree;
 
 - (NSArray *)parameters {
-    NSMutableArray *temp = [NSMutableArray arrayWithCapacity:33];
-    for (int i = 0; i < 33; i++) {
-        [temp setObject:[NSNumber numberWithFloat:_kernel.parameters[i]] atIndexedSubscript:i];
+    NSMutableArray *temp = [NSMutableArray arrayWithCapacity:35];
+    for (int i = 0; i < 35; i++) {
+        [temp setObject:[NSNumber numberWithFloat:_kernel.p[i]] atIndexedSubscript:i];
     }
     return [NSArray arrayWithArray:temp];
 }
 
 - (void)setParameters:(NSArray *)parameters {
-    float params[33] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    float params[35] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     for (int i = 0; i < parameters.count; i++) {
         params[i] = [parameters[i] floatValue];
     }
     _kernel.setParameters(params);
 }
 
-standardBankFunctions()
+- (BOOL)isSetUp { return _kernel.resetted; }
+- (void)stopNote:(uint8_t)note { _kernel.stopNote(note); }
+- (void)startNote:(uint8_t)note velocity:(uint8_t)velocity { _kernel.startNote(note, velocity); }
+- (void)startNote:(uint8_t)note velocity:(uint8_t)velocity frequency:(float)frequency {
+    _kernel.startNote(note, velocity, frequency);
+}
 
 - (void)setupWaveform:(UInt32)waveform size:(int)size {
     _kernel.setupWaveform(waveform, (uint32_t)size);
@@ -54,134 +59,153 @@ standardBankFunctions()
 - (void)createParameters {
 
     standardGeneratorSetup(SynthOne)
-    standardBankParameters()
     
-    AUParameter *index1AUParameter =                [AUParameter parameter:@"index1"                name:@"Index 1"                 address:index1Address                min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *index2AUParameter =                [AUParameter parameter:@"index2"                name:@"Index 2"                 address:index2Address                min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *morphBalanceAUParameter =          [AUParameter parameter:@"morphBalance"          name:@"Morph Balance"           address:morphBalanceAddress          min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *morph1SemitoneOffsetAUParameter =  [AUParameter parameter:@"morph1SemitoneOffset"  name:@"Morph 1 Semitone Offset" address:morph1SemitoneOffsetAddress  min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *morph2SemitoneOffsetAUParameter =  [AUParameter parameter:@"morph2SemitoneOffset"  name:@"Morph 2 Semitone Offset" address:morph2SemitoneOffsetAddress  min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *morph1VolumeAUParameter =          [AUParameter parameter:@"morph1Volume"          name:@"Morph 1 Volume"          address:morph1VolumeAddress          min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *morph2VolumeAUParameter =          [AUParameter parameter:@"morph2Volume"          name:@"Morph 2 Volume"          address:morph2VolumeAddress          min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *subVolumeAUParameter =             [AUParameter parameter:@"subVolume"             name:@"Sub Volume"              address:subVolumeAddress             min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *subOctaveDownAUParameter =         [AUParameter parameter:@"subOctaveDown"         name:@"Sub Octave Down"         address:subOctaveDownAddress         min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *subIsSquareAUParameter =           [AUParameter parameter:@"subIsSquare"           name:@"Sub Is Square"           address:subIsSquareAddress           min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *fmVolumeAUParameter =              [AUParameter parameter:@"fmVolume"              name:@"FM Volume"               address:fmVolumeAddress              min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *fmAmountAUParameter =              [AUParameter parameter:@"fmAmount"              name:@"FM Amont"                address:fmAmountAddress              min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *noiseVolumeAUParameter =           [AUParameter parameter:@"noiseVolume"           name:@"Noise Volume"            address:noiseVolumeAddress           min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *lfoIndexAUParameter =              [AUParameter parameter:@"lfoIndex"              name:@"LFO Index"               address:lfoIndexAddress              min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *lfoAmplitudeAUParameter =          [AUParameter parameter:@"lfoAmplitude"          name:@"LFO Amplitude"           address:lfoAmplitudeAddress          min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *lfoRateAUParameter =               [AUParameter parameter:@"lfoRate"               name:@"LFO Rate"                address:lfoRateAddress               min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *cutoffAUParameter =                [AUParameter parameter:@"cutoff"                name:@"Cutoff"                  address:cutoffAddress                min:0.0 max:22000 unit:kAudioUnitParameterUnit_Hertz];
-    AUParameter *resonanceAUParameter =             [AUParameter parameter:@"resonance"             name:@"Resonance"               address:resonanceAddress             min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *filterMixAUParameter =             [AUParameter parameter:@"filterMix"             name:@"Filter Mix"              address:filterMixAddress             min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *filterADSRMixAUParameter =         [AUParameter parameter:@"filterADSRMix"         name:@"Filter ADSR Mix"         address:filterADSRMixAddress         min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *isMonoAUParameter =                [AUParameter parameter:@"isMono"                name:@"Is Mono"                 address:isMonoAddress                min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *glideAUParameter =                 [AUParameter parameter:@"glide"                 name:@"Glide"                   address:glideAddress                 min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *filterAttackDurationAUParameter =  [AUParameter parameter:@"filterAttackDuration"  name:@"Filter Attack Duration"  address:filterAttackDurationAddress  min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *filterDecayDurationAUParameter =   [AUParameter parameter:@"filterDecayDuration"   name:@"Filter Decay Duration"   address:filterDecayDurationAddress   min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *filterSustainLevelAUParameter =    [AUParameter parameter:@"filterSustainLevel"    name:@"Filter Sustain Level"    address:filterSustainLevelAddress    min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *filterReleaseDurationAUParameter = [AUParameter parameter:@"filterReleaseDuration" name:@"Filter Release Duration" address:filterReleaseDurationAddress min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *masterVolumeAUParameter =          [AUParameter parameter:@"masterVolume"          name:@"masterVolume"            address:masterVolumeAddress          min:0.0 max:2.0   unit:kAudioUnitParameterUnit_Generic];
-    
+    AUParameter *index1AU =                [AUParameter parameter:@"index1"                name:@"Index 1"                 address:index1                min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *index2AU =                [AUParameter parameter:@"index2"                name:@"Index 2"                 address:index2                min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *morphBalanceAU =          [AUParameter parameter:@"morphBalance"          name:@"Morph Balance"           address:morphBalance          min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *morph1SemitoneOffsetAU =  [AUParameter parameter:@"morph1SemitoneOffset"  name:@"Morph 1 Semitone Offset" address:morph1SemitoneOffset  min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *morph2SemitoneOffsetAU =  [AUParameter parameter:@"morph2SemitoneOffset"  name:@"Morph 2 Semitone Offset" address:morph2SemitoneOffset  min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *morph1VolumeAU =          [AUParameter parameter:@"morph1Volume"          name:@"Morph 1 Volume"          address:morph1Volume          min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *morph2VolumeAU =          [AUParameter parameter:@"morph2Volume"          name:@"Morph 2 Volume"          address:morph2Volume          min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *subVolumeAU =             [AUParameter parameter:@"subVolume"             name:@"Sub Volume"              address:subVolume             min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *subOctaveDownAU =         [AUParameter parameter:@"subOctaveDown"         name:@"Sub Octave Down"         address:subOctaveDown         min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *subIsSquareAU =           [AUParameter parameter:@"subIsSquare"           name:@"Sub Is Square"           address:subIsSquare           min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *fmVolumeAU =              [AUParameter parameter:@"fmVolume"              name:@"FM Volume"               address:fmVolume              min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *fmAmountAU =              [AUParameter parameter:@"fmAmount"              name:@"FM Amont"                address:fmAmount              min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *noiseVolumeAU =           [AUParameter parameter:@"noiseVolume"           name:@"Noise Volume"            address:noiseVolume           min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *lfoIndexAU =              [AUParameter parameter:@"lfoIndex"              name:@"LFO Index"               address:lfoIndex              min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *lfoAmplitudeAU =          [AUParameter parameter:@"lfoAmplitude"          name:@"LFO Amplitude"           address:lfoAmplitude          min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *lfoRateAU =               [AUParameter parameter:@"lfoRate"               name:@"LFO Rate"                address:lfoRate               min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *cutoffAU =                [AUParameter parameter:@"cutoff"                name:@"Cutoff"                  address:cutoff                min:0.0 max:22000 unit:kAudioUnitParameterUnit_Hertz];
+    AUParameter *resonanceAU =             [AUParameter parameter:@"resonance"             name:@"Resonance"               address:resonance             min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *filterMixAU =             [AUParameter parameter:@"filterMix"             name:@"Filter Mix"              address:filterMix             min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *filterADSRMixAU =         [AUParameter parameter:@"filterADSRMix"         name:@"Filter ADSR Mix"         address:filterADSRMix         min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *isMonoAU =                [AUParameter parameter:@"isMono"                name:@"Is Mono"                 address:isMono                min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *glideAU =                 [AUParameter parameter:@"glide"                 name:@"Glide"                   address:glide                 min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *filterAttackDurationAU =  [AUParameter parameter:@"filterAttackDuration"  name:@"Filter Attack Duration"  address:filterAttackDuration  min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *filterDecayDurationAU =   [AUParameter parameter:@"filterDecayDuration"   name:@"Filter Decay Duration"   address:filterDecayDuration   min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *filterSustainLevelAU =    [AUParameter parameter:@"filterSustainLevel"    name:@"Filter Sustain Level"    address:filterSustainLevel    min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *filterReleaseDurationAU = [AUParameter parameter:@"filterReleaseDuration" name:@"Filter Release Duration" address:filterReleaseDuration min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *attackDurationAU =        [AUParameter parameter:@"attackDuration"        name:@"Attack Duration"         address:attackDuration        min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *decayDurationAU =         [AUParameter parameter:@"decayDuration"         name:@"Decay Duration"          address:decayDuration         min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *sustainLevelAU =          [AUParameter parameter:@"sustainLevel"          name:@"Sustain Level"           address:sustainLevel          min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *releaseDurationAU =       [AUParameter parameter:@"releaseDuration"       name:@"Release Duration"        address:releaseDuration       min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *detuningOffsetAU =        [AUParameter parameter:@"detuningOffset"        name:@"Detuning Offset"         address:detuningOffset        min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *detuningMultiplierAU =    [AUParameter parameter:@"detuningMultiplier"    name:@"Detuning Multiplier"     address:detuningMultiplier    min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *masterVolumeAU =          [AUParameter parameter:@"masterVolume"          name:@"Master Volume"           address:masterVolume          min:0.0 max:2.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *bitCrushDepthAU =         [AUParameter parameter:@"bitCrushDepth"         name:@"Bit Depth"               address:bitCrushDepth         min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *bitCrushSampleRateAU =    [AUParameter parameter:@"bitCrushSampleRate"    name:@"Sample Rate"             address:bitCrushSampleRate    min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+
     // Initialize the parameter values.
-    index1AUParameter.value = 0;
-    index2AUParameter.value = 0;
-    morphBalanceAUParameter.value = 0.5;
-    morph1SemitoneOffsetAUParameter.value = 0;
-    morph2SemitoneOffsetAUParameter.value = 0;
-    morph1VolumeAUParameter.value = 1;
-    morph2VolumeAUParameter.value = 1;
-    subVolumeAUParameter.value = 0;
-    subOctaveDownAUParameter.value = 1;
-    subIsSquareAUParameter.value = 0;
-    fmVolumeAUParameter.value = 0;
-    fmAmountAUParameter.value = 0;
-    noiseVolumeAUParameter.value = 0;
-    lfoIndexAUParameter.value = 0;
-    lfoAmplitudeAUParameter.value = 1;
-    lfoRateAUParameter.value = 1;
-    cutoffAUParameter.value = 1000;
-    resonanceAUParameter.value = 0.5;
-    filterMixAUParameter.value = 1;
-    filterADSRMixAUParameter.value = 0.5;
-    isMonoAUParameter.value = 0;
-    glideAUParameter.value = 0;
-    filterAttackDurationAUParameter.value = 0.1;
-    filterDecayDurationAUParameter.value = 0.1;
-    filterSustainLevelAUParameter.value = 1.0;
-    filterReleaseDurationAUParameter.value = 0.1;
-    masterVolumeAUParameter.value = 0.8;
+    index1AU.value = 0;
+    index2AU.value = 0;
+    morphBalanceAU.value = 0.5;
+    morph1SemitoneOffsetAU.value = 0;
+    morph2SemitoneOffsetAU.value = 0;
+    morph1VolumeAU.value = 1;
+    morph2VolumeAU.value = 1;
+    subVolumeAU.value = 0;
+    subOctaveDownAU.value = 1;
+    subIsSquareAU.value = 0;
+    fmVolumeAU.value = 0;
+    fmAmountAU.value = 0;
+    noiseVolumeAU.value = 0;
+    lfoIndexAU.value = 0;
+    lfoAmplitudeAU.value = 1;
+    lfoRateAU.value = 1;
+    cutoffAU.value = 1000;
+    resonanceAU.value = 0.5;
+    filterMixAU.value = 1;
+    filterADSRMixAU.value = 0.5;
+    isMonoAU.value = 0;
+    glideAU.value = 0;
+    filterAttackDurationAU.value = 0.1;
+    filterDecayDurationAU.value = 0.1;
+    filterSustainLevelAU.value = 1.0;
+    filterReleaseDurationAU.value = 0.1;
+    attackDurationAU.value = 0.1;
+    decayDurationAU.value = 0.1;
+    sustainLevelAU.value = 1.0;
+    releaseDurationAU.value = 0.1;
+    detuningOffsetAU.value = 0.0;
+    detuningMultiplierAU.value = 1.0;
+    masterVolumeAU.value = 0.8;
+    bitCrushDepthAU.value = 24;
+    bitCrushSampleRateAU.value = 44100;
     
-    _kernel.setParameter(index1Address, index1AUParameter.value);
-    _kernel.setParameter(index2Address, index2AUParameter.value);
-    _kernel.setParameter(morphBalanceAddress, morphBalanceAUParameter.value);
-    _kernel.setParameter(morph1SemitoneOffsetAddress, morph1SemitoneOffsetAUParameter.value);
-    _kernel.setParameter(morph2SemitoneOffsetAddress, morph2SemitoneOffsetAUParameter.value);
-    _kernel.setParameter(morph1VolumeAddress, morph1VolumeAUParameter.value);
-    _kernel.setParameter(morph2VolumeAddress, morph2VolumeAUParameter.value);
-    _kernel.setParameter(subVolumeAddress, subVolumeAUParameter.value);
-    _kernel.setParameter(subOctaveDownAddress, subOctaveDownAUParameter.value);
-    _kernel.setParameter(subIsSquareAddress, subIsSquareAUParameter.value);
-    _kernel.setParameter(fmVolumeAddress, fmVolumeAUParameter.value);
-    _kernel.setParameter(fmAmountAddress, fmAmountAUParameter.value);
-    _kernel.setParameter(noiseVolumeAddress, noiseVolumeAUParameter.value);
-    _kernel.setParameter(lfoIndexAddress, lfoIndexAUParameter.value);
-    _kernel.setParameter(lfoAmplitudeAddress, lfoAmplitudeAUParameter.value);
-    _kernel.setParameter(lfoRateAddress, lfoRateAUParameter.value);
-    _kernel.setParameter(cutoffAddress, cutoffAUParameter.value);
-    _kernel.setParameter(resonanceAddress, resonanceAUParameter.value);
-    _kernel.setParameter(filterMixAddress, filterMixAUParameter.value);
-    _kernel.setParameter(filterADSRMixAddress, filterADSRMixAUParameter.value);
-    _kernel.setParameter(isMonoAddress, isMonoAUParameter.value);
-    _kernel.setParameter(glideAddress, glideAUParameter.value);
-    _kernel.setParameter(filterAttackDurationAddress, filterAttackDurationAUParameter.value);
-    _kernel.setParameter(filterDecayDurationAddress, filterDecayDurationAUParameter.value);
-    _kernel.setParameter(filterSustainLevelAddress, filterSustainLevelAUParameter.value);
-    _kernel.setParameter(filterReleaseDurationAddress, filterReleaseDurationAUParameter.value);
-    _kernel.setParameter(attackDurationAddress, attackDurationAUParameter.value);
-    _kernel.setParameter(decayDurationAddress, decayDurationAUParameter.value);
-    _kernel.setParameter(sustainLevelAddress, sustainLevelAUParameter.value);
-    _kernel.setParameter(releaseDurationAddress, releaseDurationAUParameter.value);
-    _kernel.setParameter(detuningOffsetAddress, detuningOffsetAUParameter.value);
-    _kernel.setParameter(detuningMultiplierAddress, detuningMultiplierAUParameter.value);
-    _kernel.setParameter(masterVolumeAddress, masterVolumeAUParameter.value);
+    _kernel.setParameter(index1, index1AU.value);
+    _kernel.setParameter(index2, index2AU.value);
+    _kernel.setParameter(morphBalance, morphBalanceAU.value);
+    _kernel.setParameter(morph1SemitoneOffset, morph1SemitoneOffsetAU.value);
+    _kernel.setParameter(morph2SemitoneOffset, morph2SemitoneOffsetAU.value);
+    _kernel.setParameter(morph1Volume, morph1VolumeAU.value);
+    _kernel.setParameter(morph2Volume, morph2VolumeAU.value);
+    _kernel.setParameter(subVolume, subVolumeAU.value);
+    _kernel.setParameter(subOctaveDown, subOctaveDownAU.value);
+    _kernel.setParameter(subIsSquare, subIsSquareAU.value);
+    _kernel.setParameter(fmVolume, fmVolumeAU.value);
+    _kernel.setParameter(fmAmount, fmAmountAU.value);
+    _kernel.setParameter(noiseVolume, noiseVolumeAU.value);
+    _kernel.setParameter(lfoIndex, lfoIndexAU.value);
+    _kernel.setParameter(lfoAmplitude, lfoAmplitudeAU.value);
+    _kernel.setParameter(lfoRate, lfoRateAU.value);
+    _kernel.setParameter(cutoff, cutoffAU.value);
+    _kernel.setParameter(resonance, resonanceAU.value);
+    _kernel.setParameter(filterMix, filterMixAU.value);
+    _kernel.setParameter(filterADSRMix, filterADSRMixAU.value);
+    _kernel.setParameter(isMono, isMonoAU.value);
+    _kernel.setParameter(glide, glideAU.value);
+    _kernel.setParameter(filterAttackDuration, filterAttackDurationAU.value);
+    _kernel.setParameter(filterDecayDuration, filterDecayDurationAU.value);
+    _kernel.setParameter(filterSustainLevel, filterSustainLevelAU.value);
+    _kernel.setParameter(filterReleaseDuration, filterReleaseDurationAU.value);
+    _kernel.setParameter(attackDuration, attackDurationAU.value);
+    _kernel.setParameter(decayDuration, decayDurationAU.value);
+    _kernel.setParameter(sustainLevel, sustainLevelAU.value);
+    _kernel.setParameter(releaseDuration, releaseDurationAU.value);
+    _kernel.setParameter(detuningOffset, detuningOffsetAU.value);
+    _kernel.setParameter(detuningMultiplier, detuningMultiplierAU.value);
+    _kernel.setParameter(masterVolume, masterVolumeAU.value);
+    _kernel.setParameter(bitCrushDepth, bitCrushDepthAU.value);
+    _kernel.setParameter(bitCrushSampleRate, bitCrushSampleRateAU.value);
 
     // Create the parameter tree.
     _parameterTree = [AUParameterTree createTreeWithChildren:@[
-        index1AUParameter,
-        index2AUParameter,
-        morphBalanceAUParameter,
-        morph1SemitoneOffsetAUParameter,
-        morph2SemitoneOffsetAUParameter,
-        morph1VolumeAUParameter,
-        morph2VolumeAUParameter,
-        subVolumeAUParameter,
-        subOctaveDownAUParameter,
-        subIsSquareAUParameter,
-        fmVolumeAUParameter,
-        fmAmountAUParameter,
-        noiseVolumeAUParameter,
-        lfoIndexAUParameter,
-        lfoAmplitudeAUParameter,
-        lfoRateAUParameter,
-        cutoffAUParameter,
-        resonanceAUParameter,
-        filterMixAUParameter,
-        filterADSRMixAUParameter,
-        isMonoAUParameter,
-        glideAUParameter,
-        filterAttackDurationAUParameter,
-        filterDecayDurationAUParameter,
-        filterSustainLevelAUParameter,
-        filterReleaseDurationAUParameter,
-        attackDurationAUParameter,
-        decayDurationAUParameter,
-        sustainLevelAUParameter,
-        releaseDurationAUParameter,
-        detuningOffsetAUParameter,
-        detuningMultiplierAUParameter,
-        masterVolumeAUParameter
+        index1AU,
+        index2AU,
+        morphBalanceAU,
+        morph1SemitoneOffsetAU,
+        morph2SemitoneOffsetAU,
+        morph1VolumeAU,
+        morph2VolumeAU,
+        subVolumeAU,
+        subOctaveDownAU,
+        subIsSquareAU,
+        fmVolumeAU,
+        fmAmountAU,
+        noiseVolumeAU,
+        lfoIndexAU,
+        lfoAmplitudeAU,
+        lfoRateAU,
+        cutoffAU,
+        resonanceAU,
+        filterMixAU,
+        filterADSRMixAU,
+        isMonoAU,
+        glideAU,
+        filterAttackDurationAU,
+        filterDecayDurationAU,
+        filterSustainLevelAU,
+        filterReleaseDurationAU,
+        attackDurationAU,
+        decayDurationAU,
+        sustainLevelAU,
+        releaseDurationAU,
+        detuningOffsetAU,
+        detuningMultiplierAU,
+        masterVolumeAU,
+        bitCrushDepthAU,
+        bitCrushSampleRateAU
     ]];
 
     parameterTreeBlock(SynthOne)

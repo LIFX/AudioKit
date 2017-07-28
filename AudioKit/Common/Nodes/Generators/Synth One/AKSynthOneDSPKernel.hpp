@@ -8,45 +8,57 @@
 
 #pragma once
 
-#import "AKBankDSPKernel.hpp"
+#import "AKSoundpipeKernel.hpp"
+#import <vector>
+
+static inline double pow2(double x) {
+    return x * x;
+}
+
+static inline double noteToHz(int noteNumber)
+{
+    return 440. * exp2((noteNumber - 69)/12.);
+}
 
 enum {
-    index1Address = 0,
-    index2Address = 1,
-    morphBalanceAddress = 2,
-    morph1SemitoneOffsetAddress = 3,
-    morph2SemitoneOffsetAddress = 4,
-    morph1VolumeAddress = 5,
-    morph2VolumeAddress = 6,
-    subVolumeAddress = 7,
-    subOctaveDownAddress = 8,
-    subIsSquareAddress = 9,
-    fmVolumeAddress = 10,
-    fmAmountAddress = 11,
-    noiseVolumeAddress = 12,
-    lfoIndexAddress = 13,
-    lfoAmplitudeAddress = 14,
-    lfoRateAddress = 15,
-    cutoffAddress = 16,
-    resonanceAddress = 17,
-    filterMixAddress = 18,
-    filterADSRMixAddress = 19,
-    isMonoAddress = 20,
-    glideAddress = 21,
-    filterAttackDurationAddress = 22,
-    filterDecayDurationAddress = 23,
-    filterSustainLevelAddress = 24,
-    filterReleaseDurationAddress = 25,
-    attackDurationAddress = 26,
-    decayDurationAddress = 27,
-    sustainLevelAddress = 28,
-    releaseDurationAddress = 29,
-    detuningOffsetAddress = 30,
-    detuningMultiplierAddress = 31,
-    masterVolumeAddress = 32
+    index1 = 0,
+    index2 = 1,
+    morphBalance = 2,
+    morph1SemitoneOffset = 3,
+    morph2SemitoneOffset = 4,
+    morph1Volume = 5,
+    morph2Volume = 6,
+    subVolume = 7,
+    subOctaveDown = 8,
+    subIsSquare = 9,
+    fmVolume = 10,
+    fmAmount = 11,
+    noiseVolume = 12,
+    lfoIndex = 13,
+    lfoAmplitude = 14,
+    lfoRate = 15,
+    cutoff = 16,
+    resonance = 17,
+    filterMix = 18,
+    filterADSRMix = 19,
+    isMono = 20,
+    glide = 21,
+    filterAttackDuration = 22,
+    filterDecayDuration = 23,
+    filterSustainLevel = 24,
+    filterReleaseDuration = 25,
+    attackDuration = 26,
+    decayDuration = 27,
+    sustainLevel = 28,
+    releaseDuration = 29,
+    detuningOffset = 30,
+    detuningMultiplier = 31,
+    masterVolume = 32,
+    bitCrushDepth = 33,
+    bitCrushSampleRate = 34
 };
 
-class AKSynthOneDSPKernel : public AKBankDSPKernel, public AKOutputBuffered {
+class AKSynthOneDSPKernel : public AKSoundpipeKernel, public AKOutputBuffered {
 public:
     // MARK: Types
     struct NoteState {
@@ -160,9 +172,9 @@ public:
                 }
             } else {
                 if (stage == stageOff) { add(); }
-                oscmorph1->freq = (float)noteToHz(noteNumber + (int)kernel->parameters[morph1SemitoneOffsetAddress]);
+                oscmorph1->freq = (float)noteToHz(noteNumber + (int)kernel->p[morph1SemitoneOffset]);
                 oscmorph1->amp = (float)pow2(velocity / 127.);
-                oscmorph2->freq = (float)noteToHz(noteNumber + (int)kernel->parameters[morph2SemitoneOffsetAddress]);
+                oscmorph2->freq = (float)noteToHz(noteNumber + (int)kernel->p[morph2SemitoneOffset]);
                 oscmorph2->amp = (float)pow2(velocity / 127.);
                 subOsc->freq = (float)noteToHz(noteNumber);
                 subOsc->amp = (float)pow2(velocity / 127.);
@@ -176,40 +188,40 @@ public:
             }
         }
         
-        
+
         void run(int frameCount, float *outL, float *outR)
         {
-            float originalFrequency1 = (float)noteToHz(baseNote + (int)kernel->parameters[morph1SemitoneOffsetAddress]);
+            float originalFrequency1 = (float)noteToHz(baseNote + (int)kernel->p[morph1SemitoneOffset]);
             oscmorph1->freq *= kernel->detuningMultiplierSmooth;
             oscmorph1->freq = clamp(oscmorph1->freq, 0.0f, 22050.0f);
-            oscmorph1->wtpos = kernel->parameters[index1Address];
+            oscmorph1->wtpos = kernel->p[index1];
             
-            float originalFrequency2 = (float)noteToHz(baseNote + (int)kernel->parameters[morph2SemitoneOffsetAddress]);
+            float originalFrequency2 = (float)noteToHz(baseNote + (int)kernel->p[morph2SemitoneOffset]);
             oscmorph2->freq *= kernel->detuningMultiplierSmooth;
-            oscmorph2->freq += kernel->parameters[detuningOffsetAddress];
+            oscmorph2->freq += kernel->p[detuningOffset];
             oscmorph2->freq = clamp(oscmorph2->freq, 0.0f, 22050.0f);
-            oscmorph2->wtpos = kernel->parameters[index2Address];
+            oscmorph2->wtpos = kernel->p[index2];
             
             float originalFrequencySub = subOsc->freq;
             subOsc->freq *= kernel->detuningMultiplierSmooth / (2.0 *
-            (1.0 + kernel->parameters[subOctaveDownAddress]));
+            (1.0 + kernel->p[subOctaveDown]));
             
             float originalFrequencyFM = fmOsc->freq;
             fmOsc->freq *= kernel->detuningMultiplierSmooth;
-            fmOsc->indx = kernel->parameters[fmAmountAddress];
+            fmOsc->indx = kernel->p[fmAmount];
             
-            adsr->atk = (float)kernel->parameters[attackDurationAddress];
-            adsr->dec = (float)kernel->parameters[decayDurationAddress];
-            adsr->sus = (float)kernel->parameters[sustainLevelAddress];
-            adsr->rel = (float)kernel->parameters[releaseDurationAddress];
+            adsr->atk = (float)kernel->p[attackDuration];
+            adsr->dec = (float)kernel->p[decayDuration];
+            adsr->sus = (float)kernel->p[sustainLevel];
+            adsr->rel = (float)kernel->p[releaseDuration];
             
-            fadsr->atk = (float)kernel->parameters[filterAttackDurationAddress];
-            fadsr->dec = (float)kernel->parameters[filterDecayDurationAddress];
-            fadsr->sus = (float)kernel->parameters[filterSustainLevelAddress];
-            fadsr->rel = (float)kernel->parameters[filterReleaseDurationAddress];
+            fadsr->atk = (float)kernel->p[filterAttackDuration];
+            fadsr->dec = (float)kernel->p[filterDecayDuration];
+            fadsr->sus = (float)kernel->p[filterSustainLevel];
+            fadsr->rel = (float)kernel->p[filterReleaseDuration];
             
             morphCrossFade->pos = kernel->morphBalanceSmooth;
-            filterCrossFade->pos = kernel->parameters[filterMixAddress];
+            filterCrossFade->pos = kernel->p[filterMix];
             moog->res = kernel->resonanceSmooth;
 
             for (int frameIndex = 0; frameIndex < frameCount; ++frameIndex) {
@@ -227,31 +239,31 @@ public:
                 //                filter *= kernel->filterADSRMix;
                 
                 moog->freq = kernel->cutoffSmooth + kernel->lfoOutput; // basic frequency
-                moog->freq = moog->freq - moog->freq * kernel->parameters[filterADSRMixAddress] * (1.0 - filter);
+                moog->freq = moog->freq - moog->freq * kernel->p[filterADSRMix] * (1.0 - filter);
                 
                 if (moog->freq < 0.0) {
                     moog->freq = 0.0;
                 }
                 
                 sp_oscmorph_compute(kernel->sp, oscmorph1, nil, &oscmorph1_out);
-                oscmorph1_out *= kernel->parameters[morph1VolumeAddress];
+                oscmorph1_out *= kernel->p[morph1Volume];
                 sp_oscmorph_compute(kernel->sp, oscmorph2, nil, &oscmorph2_out);
-                oscmorph2_out *= kernel->parameters[morph2VolumeAddress];
+                oscmorph2_out *= kernel->p[morph2Volume];
                 sp_crossfade_compute(kernel->sp, morphCrossFade, &oscmorph1_out, &oscmorph2_out, &osc_morph_out);
                 sp_osc_compute(kernel->sp, subOsc, nil, &subOsc_out);
-                if (kernel->parameters[subIsSquareAddress]) {
+                if (kernel->p[subIsSquare]) {
                     if (subOsc_out > 0) {
-                        subOsc_out = kernel->parameters[subVolumeAddress];
+                        subOsc_out = kernel->p[subVolume];
                     } else {
-                        subOsc_out = -kernel->parameters[subVolumeAddress];
+                        subOsc_out = -kernel->p[subVolume];
                     }
                 } else {
-                    subOsc_out *= kernel->parameters[subVolumeAddress] * 2.0; // the 2.0 is to match square's volume
+                    subOsc_out *= kernel->p[subVolume] * 2.0; // the 2.0 is to match square's volume
                 }
                 sp_fosc_compute(kernel->sp, fmOsc, nil, &fmOsc_out);
-                fmOsc_out *= kernel->parameters[fmVolumeAddress];
+                fmOsc_out *= kernel->p[fmVolume];
                 sp_noise_compute(kernel->sp, noise, nil, &noise_out);
-                noise_out *= kernel->parameters[noiseVolumeAddress];
+                noise_out *= kernel->p[noiseVolume];
                 
                 float synthOut = amp * (osc_morph_out + subOsc_out + fmOsc_out + noise_out);
                 
@@ -284,7 +296,7 @@ public:
     }
 
     void init(int _channels, double _sampleRate) override {
-        AKBankDSPKernel::init(_channels, _sampleRate);
+        AKSoundpipeKernel::init(_channels, _sampleRate);
         sp_ftbl_create(sp, &sine, 2048);
         sp_gen_sine(sp, sine);
         
@@ -368,33 +380,76 @@ public:
             state.clear();
         }
         playingNotes = nullptr;
-        AKBankDSPKernel::reset();
+
+        playingNotesCount = 0;
+        resetted = true;
     }
-    
-    standardBankKernelFunctions()
+
+    void startNote(int note, int velocity) {
+        noteStates[note].noteOn(note, velocity);
+    }
+    void startNote(int note, int velocity, float frequency) {
+        noteStates[note].noteOn(note, velocity, frequency);
+    }
+
+    void stopNote(int note) {
+        noteStates[note].noteOn(note, 0);
+    }
+//    standardBankKernelFunctions()
 
     void setParameters(float params[]) {
-        for (int i = 0; i < 33; i++) {
-            parameters[i] = params[i];
+        for (int i = 0; i < 35; i++) {
+            p[i] = params[i];
         }
     }
 
     void setParameter(AUParameterAddress address, AUValue value) {
-        parameters[address] = value; //clamp(value, -100000.0f, 100000.0f);
+        p[address] = value; //clamp(value, -100000.0f, 100000.0f);
     }
 
     AUValue getParameter(AUParameterAddress address) {
-        return parameters[address];
+        return p[address];
     }
 
     void startRamp(AUParameterAddress address, AUValue value, AUAudioFrameCount duration) override {
     }
 
-    standardHandleMIDI()
+    virtual void handleMIDIEvent(AUMIDIEvent const& midiEvent) override { \
+        if (midiEvent.length != 3) return; \
+        uint8_t status = midiEvent.data[0] & 0xF0; \
+        switch (status) { \
+            case 0x80 : {  \
+                uint8_t note = midiEvent.data[1]; \
+                if (note > 127) break; \
+                noteStates[note].noteOn(note, 0); \
+                break; \
+            } \
+            case 0x90 : {  \
+                uint8_t note = midiEvent.data[1]; \
+                uint8_t veloc = midiEvent.data[2]; \
+                if (note > 127 || veloc > 127) break; \
+                noteStates[note].noteOn(note, veloc); \
+                break; \
+            } \
+            case 0xB0 : { \
+                uint8_t num = midiEvent.data[1]; \
+                if (num == 123) { \
+                    NoteState* noteState = playingNotes; \
+                    while (noteState) { \
+                        noteState->clear(); \
+                        noteState = noteState->next; \
+                    } \
+                    playingNotes = nullptr; \
+                    playingNotesCount = 0; \
+                } \
+                break; \
+            } \
+        } \
+    }
 
     void handleTempoSetting(float currentTempo) {
         if (currentTempo != tempo) {
-//            setParameter(cutoffAddress, currentTempo);
+//            setParameter(cutoff, currentTempo);
             tempo = currentTempo;
         }
     }
@@ -409,7 +464,7 @@ public:
             outR[i] = 0.0f;
         }
         
-        if (parameters[isMonoAddress] == 1) {
+        if (p[isMono] == 1) {
             NSLog(@"WARNING IS MONO");
             if (isMonoSetup == false) {
                 setupMono();
@@ -426,7 +481,7 @@ public:
             }
         }
         
-        lfo->freq = parameters[lfoRateAddress];
+        lfo->freq = p[lfoRate];
         
         for (AUAudioFrameCount i = 0; i < frameCount; ++i) {
             sp_phasor_compute(sp, lfo, nil, &lfoOutput);
@@ -445,26 +500,31 @@ public:
                 lfoOutput = (0.5 - lfoOutput) * 2.0;
             }
             
-            lfoOutput *= parameters[lfoAmplitudeAddress];
+            lfoOutput *= p[lfoAmplitude];
             
-            sp_port_compute(sp, multiplierPort, &(parameters[detuningMultiplierAddress]), &detuningMultiplierSmooth);
-            sp_port_compute(sp, balancePort, &(parameters[morphBalanceAddress]), &morphBalanceSmooth);
-            sp_port_compute(sp, cutoffPort, &(parameters[cutoffAddress]), &cutoffSmooth);
-            sp_port_compute(sp, resonancePort, &(parameters[resonanceAddress]), &resonanceSmooth);
+            sp_port_compute(sp, multiplierPort, &(p[detuningMultiplier]), &detuningMultiplierSmooth);
+            sp_port_compute(sp, balancePort, &(p[morphBalance]), &morphBalanceSmooth);
+            sp_port_compute(sp, cutoffPort, &(p[cutoff]), &cutoffSmooth);
+            sp_port_compute(sp, resonancePort, &(p[resonance]), &resonanceSmooth);
             float synthOut = outL[i];
+
+            float bitCrushOut = 0.0;
+            bitcrush->bitdepth = p[bitCrushDepth];
+            bitcrush->srate = p[bitCrushSampleRate];
+            sp_bitcrush_compute(sp, bitcrush, &synthOut, &bitCrushOut);
+
             float finalOutL = 0.0;
             float finalOutR = 0.0;
-            
-//            sp_bitcrush_compute(sp, bitcrush, synthOut, finalOut)
+
             float panValue = 0.0;
             panOscillator->freq = 2.0;
             panOscillator->amp = 1.0;
             sp_osc_compute(sp, panOscillator, nil, &panValue);
             pan->pan = panValue;
-            sp_pan2_compute(sp, pan, &synthOut, &finalOutL, &finalOutR);
+            sp_pan2_compute(sp, pan, &bitCrushOut, &finalOutL, &finalOutR);
             
-            outL[i] = finalOutL * parameters[masterVolumeAddress];
-            outR[i] = finalOutR * parameters[masterVolumeAddress];
+            outL[i] = finalOutL * p[masterVolume];
+            outR[i] = finalOutR * p[masterVolume];
 //            outL[i] *= 0.5f;
 //            outR[i] *= 0.5f;
         }
@@ -499,7 +559,9 @@ private:
     float tempo = 0.0;
 public:
 
-    float parameters[33] = {
+    bool resetted = false;
+
+    float p[35] = {
         0, // index1
         0, // index2
         0.5, // morphBalance
@@ -532,7 +594,9 @@ public:
         0.1, // releaseDuration
         0, // detuningOffset
         1, // detuningMultiplier
-        0.8 // masterVolume
+        0.8, // masterVolume
+        24, // bitDepth
+        44100 //sampleRate
     };
 
     // Ported values
