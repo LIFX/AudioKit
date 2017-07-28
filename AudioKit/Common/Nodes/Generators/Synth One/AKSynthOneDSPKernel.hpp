@@ -57,7 +57,11 @@ enum {
     bitCrushDepth = 33,
     bitCrushSampleRate = 34,
     autoPanOn = 35,
-    autoPanFrequency = 36
+    autoPanFrequency = 36,
+    reverbOn = 37,
+    reverbFeedback = 38,
+    reverbCutoff = 39,
+    reverbMix = 40
 };
 
 class AKSynthOneDSPKernel : public AKSoundpipeKernel, public AKOutputBuffered {
@@ -324,7 +328,13 @@ public:
         sp_osc_init(sp, panOscillator, sine, 0.0);
         sp_pan2_create(&pan);
         sp_pan2_init(sp, pan);
-        
+        sp_revsc_create(&revsc);
+        sp_revsc_init(sp, revsc);
+        sp_crossfade_create(&revCrossfadeL);
+        sp_crossfade_create(&revCrossfadeR);
+        sp_crossfade_init(sp, revCrossfadeL);
+        sp_crossfade_init(sp, revCrossfadeR);
+
     }
     
     void setupMono() {
@@ -400,7 +410,7 @@ public:
 //    standardBankKernelFunctions()
 
     void setParameters(float params[]) {
-        for (int i = 0; i < 37; i++) {
+        for (int i = 0; i < 41; i++) {
             p[i] = params[i];
         }
     }
@@ -515,16 +525,30 @@ public:
             bitcrush->srate = p[bitCrushSampleRate];
             sp_bitcrush_compute(sp, bitcrush, &synthOut, &bitCrushOut);
 
-            float finalOutL = 0.0;
-            float finalOutR = 0.0;
+            float panL = 0.0;
+            float panR = 0.0;
 
             float panValue = 0.0;
             panOscillator->freq = p[autoPanFrequency];
             panOscillator->amp = p[autoPanOn];
             sp_osc_compute(sp, panOscillator, nil, &panValue);
             pan->pan = panValue;
-            sp_pan2_compute(sp, pan, &bitCrushOut, &finalOutL, &finalOutR);
+            sp_pan2_compute(sp, pan, &bitCrushOut, &panL, &panR);
+
+            float revOutL = 0.0;
+            float revOutR = 0.0;
+            revsc->lpfreq = p[reverbCutoff];
+            revsc->feedback = p[reverbFeedback];
             
+            sp_revsc_compute(sp, revsc, &panL, &panR, &revOutL, &revOutR);
+
+            float finalOutL = 0.0;
+            float finalOutR = 0.0;
+            revCrossfadeL->pos = p[reverbMix] * p[reverbOn];
+            revCrossfadeR->pos = p[reverbMix] * p[reverbOn];
+            sp_crossfade_compute(sp, revCrossfadeL, &panL, &revOutL, &finalOutL);
+            sp_crossfade_compute(sp, revCrossfadeR, &panR, &revOutR, &finalOutR);
+
             outL[i] = finalOutL * p[masterVolume];
             outR[i] = finalOutR * p[masterVolume];
 //            outL[i] *= 0.5f;
@@ -546,6 +570,9 @@ private:
     sp_bitcrush *bitcrush;
     sp_pan2 *pan;
     sp_osc *panOscillator;
+    sp_revsc *revsc;
+    sp_crossfade *revCrossfadeL;
+    sp_crossfade *revCrossfadeR;
 
     float lfoOutput = 0.0;
     
@@ -563,7 +590,7 @@ public:
 
     bool resetted = false;
 
-    float p[37] = {
+    float p[41] = {
         0, // index1
         0, // index2
         0.5, // morphBalance
@@ -600,7 +627,11 @@ public:
         24, // bitDepth
         44100, // sampleRate
         0, // autoPanOn
-        0 // autoPanFrequency
+        0, // autoPanFrequency
+        0, // reverbOn
+        0, // reverbFeedback
+        1000, // reverbCutoff
+        0 // reverbMix
     };
 
     // Ported values

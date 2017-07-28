@@ -22,15 +22,15 @@
 @synthesize parameterTree = _parameterTree;
 
 - (NSArray *)parameters {
-    NSMutableArray *temp = [NSMutableArray arrayWithCapacity:35];
-    for (int i = 0; i < 37; i++) {
+    NSMutableArray *temp = [NSMutableArray arrayWithCapacity:41];
+    for (int i = 0; i < 41; i++) {
         [temp setObject:[NSNumber numberWithFloat:_kernel.p[i]] atIndexedSubscript:i];
     }
     return [NSArray arrayWithArray:temp];
 }
 
 - (void)setParameters:(NSArray *)parameters {
-    float params[37] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    float params[41] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     for (int i = 0; i < parameters.count; i++) {
         params[i] = [parameters[i] floatValue];
     }
@@ -97,6 +97,10 @@
     AUParameter *bitCrushSampleRateAU =    [AUParameter parameter:@"bitCrushSampleRate"    name:@"Sample Rate"             address:bitCrushSampleRate    min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
     AUParameter *autoPanOnAU =             [AUParameter parameter:@"autoPanOn"             name:@"Auto Pan On"             address:autoPanOn             min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
     AUParameter *autoPanFrequencyAU =      [AUParameter parameter:@"autoPanFrequency"      name:@"Auto Pan Frequency"      address:autoPanFrequency      min:0.0 max:10.0  unit:kAudioUnitParameterUnit_Hertz];
+    AUParameter *reverbOnAU =              [AUParameter parameter:@"reverbOn"              name:@"Reverb On"               address:reverbOn              min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *reverbFeedbackAU =        [AUParameter parameter:@"reverbFeedback"        name:@"Reverb Feedback"         address:reverbFeedback        min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *reverbCutoffAU =          [AUParameter parameter:@"reverbCutoff"          name:@"Reverb Cutoff"           address:reverbCutoff          min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Hertz];
+    AUParameter *reverbMixAU =             [AUParameter parameter:@"reverbMix"             name:@"Reverb Mix"              address:reverbMix             min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
 
     // Initialize the parameter values.
     index1AU.value = 0;
@@ -136,7 +140,11 @@
     bitCrushSampleRateAU.value = 44100;
     autoPanOnAU.value = 0;
     autoPanFrequencyAU.value = 0;
-    
+    reverbOnAU.value = 0;
+    reverbFeedbackAU.value = 0;
+    reverbCutoffAU.value = 1000;
+    reverbMixAU.value = 0;
+
     _kernel.setParameter(index1, index1AU.value);
     _kernel.setParameter(index2, index2AU.value);
     _kernel.setParameter(morphBalance, morphBalanceAU.value);
@@ -174,6 +182,10 @@
     _kernel.setParameter(bitCrushSampleRate, bitCrushSampleRateAU.value);
     _kernel.setParameter(autoPanOn, autoPanOnAU.value);
     _kernel.setParameter(autoPanFrequency, autoPanFrequencyAU.value);
+    _kernel.setParameter(reverbOn, reverbOnAU.value);
+    _kernel.setParameter(reverbFeedback, reverbFeedbackAU.value);
+    _kernel.setParameter(reverbCutoff, reverbCutoffAU.value);
+    _kernel.setParameter(reverbMix, reverbMixAU.value);
 
     // Create the parameter tree.
     _parameterTree = [AUParameterTree createTreeWithChildren:@[
@@ -213,7 +225,11 @@
         bitCrushDepthAU,
         bitCrushSampleRateAU,
         autoPanOnAU,
-        autoPanFrequencyAU
+        autoPanFrequencyAU,
+        reverbOnAU,
+        reverbFeedbackAU,
+        reverbCutoffAU,
+        reverbMixAU
     ]];
 
     parameterTreeBlock(SynthOne)
