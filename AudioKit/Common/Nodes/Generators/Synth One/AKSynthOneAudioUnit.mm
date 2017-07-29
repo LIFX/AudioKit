@@ -22,15 +22,15 @@
 @synthesize parameterTree = _parameterTree;
 
 - (NSArray *)parameters {
-    NSMutableArray *temp = [NSMutableArray arrayWithCapacity:45];
-    for (int i = 0; i < 45; i++) {
+    NSMutableArray *temp = [NSMutableArray arrayWithCapacity:49];
+    for (int i = 0; i < 49; i++) {
         [temp setObject:[NSNumber numberWithFloat:_kernel.p[i]] atIndexedSubscript:i];
     }
     return [NSArray arrayWithArray:temp];
 }
 
 - (void)setParameters:(NSArray *)parameters {
-    float params[45] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    float params[49] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     for (int i = 0; i < parameters.count; i++) {
         params[i] = [parameters[i] floatValue];
     }
@@ -73,9 +73,9 @@
     AUParameter *fmVolumeAU =              [AUParameter parameter:@"fmVolume"              name:@"FM Volume"               address:fmVolume              min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
     AUParameter *fmAmountAU =              [AUParameter parameter:@"fmAmount"              name:@"FM Amont"                address:fmAmount              min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
     AUParameter *noiseVolumeAU =           [AUParameter parameter:@"noiseVolume"           name:@"Noise Volume"            address:noiseVolume           min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *lfoIndexAU =              [AUParameter parameter:@"lfoIndex"              name:@"LFO Index"               address:lfoIndex              min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *lfoAmplitudeAU =          [AUParameter parameter:@"lfoAmplitude"          name:@"LFO Amplitude"           address:lfoAmplitude          min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
-    AUParameter *lfoRateAU =               [AUParameter parameter:@"lfoRate"               name:@"LFO Rate"                address:lfoRate               min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *lfo1IndexAU =              [AUParameter parameter:@"lfo1Index"              name:@"LFO 1 Index"               address:lfo1Index              min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *lfo1AmplitudeAU =          [AUParameter parameter:@"lfo1Amplitude"          name:@"LFO 1 Amplitude"           address:lfo1Amplitude          min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *lfo1RateAU =               [AUParameter parameter:@"lfo1Rate"               name:@"LFO 1 Rate"                address:lfo1Rate               min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
     AUParameter *cutoffAU =                [AUParameter parameter:@"cutoff"                name:@"Cutoff"                  address:cutoff                min:0.0 max:22000 unit:kAudioUnitParameterUnit_Hertz];
     AUParameter *resonanceAU =             [AUParameter parameter:@"resonance"             name:@"Resonance"               address:resonance             min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
     AUParameter *filterMixAU =             [AUParameter parameter:@"filterMix"             name:@"Filter Mix"              address:filterMix             min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
@@ -105,6 +105,10 @@
     AUParameter *delayFeedbackAU =         [AUParameter parameter:@"delayFeedback"         name:@"Delay Feedback"          address:delayFeedback         min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
     AUParameter *delayTimeAU =             [AUParameter parameter:@"delayTime"             name:@"Delay Time"              address:delayTime             min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
     AUParameter *delayMixAU =              [AUParameter parameter:@"delayMix"              name:@"Delay Mix"               address:delayMix              min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *lfo2IndexAU =              [AUParameter parameter:@"lfo2Index"              name:@"LFO 2 Index"               address:lfo2Index              min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *lfo2AmplitudeAU =          [AUParameter parameter:@"lfo2Amplitude"          name:@"LFO 2 Amplitude"           address:lfo2Amplitude          min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *lfo2RateAU =               [AUParameter parameter:@"lfo2Rate"               name:@"LFO 2 Rate"                address:lfo2Rate               min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *cutoffLFOAU =               [AUParameter parameter:@"cutoffLFO"               name:@"Cutoff LFO"                address:cutoffLFO               min:0.0 max:2.0   unit:kAudioUnitParameterUnit_Generic];
 
     // Initialize the parameter values.
     index1AU.value = 0;
@@ -120,9 +124,9 @@
     fmVolumeAU.value = 0;
     fmAmountAU.value = 0;
     noiseVolumeAU.value = 0;
-    lfoIndexAU.value = 0;
-    lfoAmplitudeAU.value = 1;
-    lfoRateAU.value = 1;
+    lfo1IndexAU.value = 0;
+    lfo1AmplitudeAU.value = 1;
+    lfo1RateAU.value = 0;
     cutoffAU.value = 1000;
     resonanceAU.value = 0.5;
     filterMixAU.value = 1;
@@ -152,6 +156,11 @@
     delayFeedbackAU.value = 0;
     delayTimeAU.value = 0;
     delayMixAU.value = 0;
+    lfo2IndexAU.value = 0;
+    lfo2AmplitudeAU.value = 1;
+    lfo2RateAU.value = 0;
+    cutoffLFOAU.value = 1;
+
 
     _kernel.setParameter(index1, index1AU.value);
     _kernel.setParameter(index2, index2AU.value);
@@ -166,9 +175,9 @@
     _kernel.setParameter(fmVolume, fmVolumeAU.value);
     _kernel.setParameter(fmAmount, fmAmountAU.value);
     _kernel.setParameter(noiseVolume, noiseVolumeAU.value);
-    _kernel.setParameter(lfoIndex, lfoIndexAU.value);
-    _kernel.setParameter(lfoAmplitude, lfoAmplitudeAU.value);
-    _kernel.setParameter(lfoRate, lfoRateAU.value);
+    _kernel.setParameter(lfo1Index, lfo1IndexAU.value);
+    _kernel.setParameter(lfo1Amplitude, lfo1AmplitudeAU.value);
+    _kernel.setParameter(lfo1Rate, lfo1RateAU.value);
     _kernel.setParameter(cutoff, cutoffAU.value);
     _kernel.setParameter(resonance, resonanceAU.value);
     _kernel.setParameter(filterMix, filterMixAU.value);
@@ -198,6 +207,10 @@
     _kernel.setParameter(delayFeedback, delayFeedbackAU.value);
     _kernel.setParameter(delayTime, delayTimeAU.value);
     _kernel.setParameter(delayMix, delayMixAU.value);
+    _kernel.setParameter(lfo2Index, lfo2IndexAU.value);
+    _kernel.setParameter(lfo2Amplitude, lfo2AmplitudeAU.value);
+    _kernel.setParameter(lfo2Rate, lfo2RateAU.value);
+    _kernel.setParameter(cutoffLFO, cutoffLFOAU.value);
 
     // Create the parameter tree.
     _parameterTree = [AUParameterTree createTreeWithChildren:@[
@@ -214,9 +227,9 @@
         fmVolumeAU,
         fmAmountAU,
         noiseVolumeAU,
-        lfoIndexAU,
-        lfoAmplitudeAU,
-        lfoRateAU,
+        lfo1IndexAU,
+        lfo1AmplitudeAU,
+        lfo1RateAU,
         cutoffAU,
         resonanceAU,
         filterMixAU,
@@ -245,7 +258,11 @@
         delayOnAU,
         delayFeedbackAU,
         delayTimeAU,
-        delayMixAU
+        delayMixAU,
+        lfo2IndexAU,
+        lfo2AmplitudeAU,
+        lfo2RateAU,
+        cutoffLFOAU
     ]];
 
     parameterTreeBlock(SynthOne)

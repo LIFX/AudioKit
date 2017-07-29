@@ -34,9 +34,9 @@ enum {
     fmVolume = 10,
     fmAmount = 11,
     noiseVolume = 12,
-    lfoIndex = 13,
-    lfoAmplitude = 14,
-    lfoRate = 15,
+    lfo1Index = 13,
+    lfo1Amplitude = 14,
+    lfo1Rate = 15,
     cutoff = 16,
     resonance = 17,
     filterMix = 18,
@@ -65,7 +65,12 @@ enum {
     delayOn = 41,
     delayFeedback = 42,
     delayTime = 43,
-    delayMix = 44
+    delayMix = 44,
+    lfo2Index = 45,
+    lfo2Amplitude = 46,
+    lfo2Rate = 47,
+    cutoffLFO = 48
+
 };
 
 class AKSynthOneDSPKernel : public AKSoundpipeKernel, public AKOutputBuffered {
@@ -248,7 +253,7 @@ public:
                 
                 //                filter *= kernel->filterADSRMix;
                 
-                moog->freq = kernel->cutoffSmooth + kernel->lfoOutput; // basic frequency
+                moog->freq = kernel->cutoffSmooth * (1 - ((1 + kernel->lfo1) / 2.0) * kernel->p[lfo1Amplitude]);
                 moog->freq = moog->freq - moog->freq * kernel->p[filterADSRMix] * (1.0 - filter);
                 
                 if (moog->freq < 0.0) {
@@ -309,10 +314,12 @@ public:
         AKSoundpipeKernel::init(_channels, _sampleRate);
         sp_ftbl_create(sp, &sine, 2048);
         sp_gen_sine(sp, sine);
-        
-        sp_phasor_create(&lfo);
-        sp_phasor_init(sp, lfo, 0);
-        
+
+        sp_phasor_create(&lfo1Phasor);
+        sp_phasor_init(sp, lfo1Phasor, 0);
+        sp_phasor_create(&lfo2Phasor);
+        sp_phasor_init(sp, lfo2Phasor, 0);
+
         sp_port_create(&midiNotePort);
         sp_port_init(sp, midiNotePort, 0.0);
         
@@ -434,7 +441,7 @@ public:
 //    standardBankKernelFunctions()
 
     void setParameters(float params[]) {
-        for (int i = 0; i < 45; i++) {
+        for (int i = 0; i < 49; i++) {
             p[i] = params[i];
         }
     }
@@ -516,28 +523,44 @@ public:
                 noteState = noteState->next;
             }
         }
-        
-        lfo->freq = p[lfoRate];
-        
+
         for (AUAudioFrameCount i = 0; i < frameCount; ++i) {
-            sp_phasor_compute(sp, lfo, nil, &lfoOutput);
-            
-            if (lfoShape == 0) {
-                lfoOutput = sin(lfoOutput * M_PI * 2.0);
-            } else if (lfoShape == 1) {
-                if (lfoOutput > 0.5) {
-                    lfoOutput = 1.0;
+
+            lfo1Phasor->freq = p[lfo1Rate];
+            lfo2Phasor->freq = p[lfo2Rate];
+            sp_phasor_compute(sp, lfo1Phasor, nil, &lfo1);
+            sp_phasor_compute(sp, lfo2Phasor, nil, &lfo2);
+
+            if (lfo1Shape == 0) { // Sine
+                lfo1 = sin(lfo1 * M_PI * 2.0);
+            } else if (lfo1Shape == 1) { // Square
+                if (lfo1 > 0.5) {
+                    lfo1 = 1.0;
                 } else {
-                    lfoOutput = -1.0;
+                    lfo1 = -1.0;
                 }
-            } else if (lfoShape == 2) {
-                lfoOutput = (lfoOutput - 0.5) * 2.0;
-            } else if (lfoShape == 3) {
-                lfoOutput = (0.5 - lfoOutput) * 2.0;
+            } else if (lfo1Shape == 2) { // Saw
+                lfo1 = (lfo1- 0.5) * 2.0;
+            } else if (lfo1Shape == 3) { // Reversed Saw
+                lfo1 = (0.5 - lfo1) * 2.0;
             }
-            
-            lfoOutput *= p[lfoAmplitude];
-            
+
+            if (lfo2Shape == 0) { // Sine
+                lfo2 = sin(lfo2 * M_PI * 2.0);
+            } else if (lfo2Shape == 1) { // Square
+                if (lfo2 > 0.5) {
+                    lfo2 = 1.0;
+                } else {
+                    lfo2 = -1.0;
+                }
+            } else if (lfo2Shape == 2) { // Saw
+                lfo2 = (lfo2- 0.5) * 2.0;
+            } else if (lfo2Shape == 3) { // Reversed Saw
+                lfo2 = (0.5 - lfo2) * 2.0;
+            }
+
+
+
             sp_port_compute(sp, multiplierPort, &(p[detuningMultiplier]), &detuningMultiplierSmooth);
             sp_port_compute(sp, balancePort, &(p[morphBalance]), &morphBalanceSmooth);
             sp_port_compute(sp, cutoffPort, &(p[cutoff]), &cutoffSmooth);
@@ -624,9 +647,12 @@ private:
     
     sp_ftbl *ft_array[4];
     UInt32 tbl_size = 4096;
-    
+
+    sp_phasor *lfo1Phasor;
+    sp_phasor *lfo2Phasor;
+
     sp_ftbl *sine;
-    sp_phasor *lfo;
+
     sp_bitcrush *bitcrush;
 
     sp_pan2 *pan;
@@ -646,9 +672,6 @@ private:
     sp_crossfade *revCrossfadeL;
     sp_crossfade *revCrossfadeR;
 
-
-    float lfoOutput = 0.0;
-    
     sp_port *midiNotePort;
     float midiNote = 0.0;
     float midiNoteSmooth = 0.0;
@@ -663,7 +686,7 @@ public:
 
     bool resetted = false;
 
-    float p[45] = {
+    float p[49] = {
         0, // index1
         0, // index2
         0.5, // morphBalance
@@ -677,9 +700,9 @@ public:
         0, // fmVolume
         0, // fmAmount
         0, // noiseMix
-        0, // lfoIndex
-        1000, // lfoAmplitude
-        1, // lfoRate
+        0, // lfo1Index
+        1, // lfo1Amplitude
+        0, // lfo1Rate
         1000, // cutoff
         0.5, // resonance
         0.5, // filterMix
@@ -708,7 +731,12 @@ public:
         0, // delayOn
         0, // delayTime
         0, // delayFeedback
-        0 // delayMix
+        0, // delayMix
+        0, // lfo2Index
+        1, // lfo2Amplitude
+        0, // lfo2Rate
+        1 // cutoffLFO
+
     };
 
     // Ported values
@@ -717,8 +745,10 @@ public:
     float cutoffSmooth = 1666;
     float resonanceSmooth = 0.5;
 
-    // Orphan
-    float lfoShape = 0;
+    float lfo1 = 0.0;
+    float lfo2 = 0.0;
+    float lfo1Shape = 0;
+    float lfo2Shape = 0;
 
     NoteState* playingNotes = nullptr;
     int playingNotesCount = 0;
