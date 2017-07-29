@@ -217,38 +217,109 @@ public:
 
         void run(int frameCount, float *outL, float *outR)
         {
+            float extraMultiplier;
+
+            if (kernel->p[pitchLFO] == 1) {
+                extraMultiplier = 1 + 0.1 * kernel->lfo1 * kernel->p[lfo1Amplitude];
+            } else if (kernel->p[pitchLFO] == 2) {
+                extraMultiplier = 1 + 0.1 * kernel->lfo2 * kernel->p[lfo2Amplitude];
+            } else {
+                extraMultiplier = 1.0;
+            }
+
+
             float originalFrequency1 = (float)noteToHz(baseNote + (int)kernel->p[morph1SemitoneOffset]);
-            oscmorph1->freq *= kernel->detuningMultiplierSmooth;
+            oscmorph1->freq *= kernel->detuningMultiplierSmooth * extraMultiplier;
             oscmorph1->freq = clamp(oscmorph1->freq, 0.0f, 22050.0f);
-            oscmorph1->wtpos = kernel->p[index1];
+
+
+
+            if (kernel->p[index1LFO] == 1) {
+                oscmorph1->wtpos = fmax(0, kernel->p[index1] + kernel->lfo1 * kernel->p[lfo1Amplitude]);
+            } else if (kernel->p[index1LFO] == 2) {
+                oscmorph1->wtpos = fmax(0, kernel->p[index1] + kernel->lfo2 * kernel->p[lfo2Amplitude]);
+            } else {
+                oscmorph1->wtpos = kernel->p[index1];
+            }
+
             
             float originalFrequency2 = (float)noteToHz(baseNote + (int)kernel->p[morph2SemitoneOffset]);
-            oscmorph2->freq *= kernel->detuningMultiplierSmooth;
-            oscmorph2->freq += kernel->p[detuningOffset];
+            oscmorph2->freq *= kernel->detuningMultiplierSmooth * extraMultiplier;
+
+
+            if (kernel->p[detuneLFO] == 1) {
+                oscmorph2->freq += kernel->p[detuningOffset] * (1 + kernel->lfo1 * kernel->p[lfo1Amplitude]);
+            } else if (kernel->p[detuneLFO] == 2) {
+                oscmorph2->freq += kernel->p[detuningOffset] * (1 + kernel->lfo2 * kernel->p[lfo2Amplitude]);
+            } else {
+                oscmorph2->freq += kernel->p[detuningOffset];
+            }
             oscmorph2->freq = clamp(oscmorph2->freq, 0.0f, 22050.0f);
-            oscmorph2->wtpos = kernel->p[index2];
-            
+
+            if (kernel->p[index2LFO] == 1) {
+                oscmorph2->wtpos = fmax(0, kernel->p[index2] + kernel->lfo1 * kernel->p[lfo1Amplitude]);
+            } else if (kernel->p[index2LFO] == 2) {
+                oscmorph2->wtpos = fmax(0, kernel->p[index2] + kernel->lfo2 * kernel->p[lfo2Amplitude]);
+            } else {
+                oscmorph2->wtpos = kernel->p[index2];
+            }
+
             float originalFrequencySub = subOsc->freq;
             subOsc->freq *= kernel->detuningMultiplierSmooth / (2.0 *
-            (1.0 + kernel->p[subOctaveDown]));
+            (1.0 + kernel->p[subOctaveDown])) * extraMultiplier;
             
             float originalFrequencyFM = fmOsc->freq;
-            fmOsc->freq *= kernel->detuningMultiplierSmooth;
-            fmOsc->indx = kernel->p[fmAmount];
-            
+            fmOsc->freq *= kernel->detuningMultiplierSmooth * extraMultiplier;
+
+
+            if (kernel->p[pitchLFO] == 1) {
+                extraMultiplier = 1 + 0.1 * kernel->lfo1 * kernel->p[lfo1Amplitude];
+            } else if (kernel->p[pitchLFO] == 2) {
+                extraMultiplier = 1 + 0.1 * kernel->lfo2 * kernel->p[lfo2Amplitude];
+            } else {
+                extraMultiplier = 1.0;
+            }
+            if (kernel->p[fmLFO] == 1) {
+                fmOsc->indx = kernel->p[fmAmount] * (1 + kernel->lfo1) * kernel->p[lfo1Amplitude];
+            } else if (kernel->p[fmLFO] == 2) {
+                fmOsc->indx = kernel->p[fmAmount] * (1 +kernel->lfo2) * kernel->p[lfo2Amplitude];
+            } else {
+                fmOsc->indx = kernel->p[fmAmount];
+            }
+
             adsr->atk = (float)kernel->p[attackDuration];
             adsr->dec = (float)kernel->p[decayDuration];
-            adsr->sus = (float)kernel->p[sustainLevel];
-            adsr->rel = (float)kernel->p[releaseDuration];
-            
+
+            if (kernel->p[sustainLFO] == 1) {
+                adsr->sus = (float)kernel->p[sustainLevel] * (float)(1 - ((1 + kernel->lfo1) / 2.0) * kernel->p[lfo1Amplitude]);
+            } else if (kernel->p[sustainLFO] == 2) {
+                adsr->sus = (float)kernel->p[sustainLevel] * (float)(1 - ((1 + kernel->lfo2) / 2.0) * kernel->p[lfo2Amplitude]);
+            } else {
+                adsr->sus = (float)kernel->p[sustainLevel];
+            }
+
             fadsr->atk = (float)kernel->p[filterAttackDuration];
             fadsr->dec = (float)kernel->p[filterDecayDuration];
             fadsr->sus = (float)kernel->p[filterSustainLevel];
             fadsr->rel = (float)kernel->p[filterReleaseDuration];
-            
-            morphCrossFade->pos = kernel->morphBalanceSmooth;
+
+            if (kernel->p[oscMixLFO] == 1) {
+                morphCrossFade->pos = kernel->morphBalanceSmooth + kernel->lfo1 * kernel->p[lfo1Amplitude];
+            } else if (kernel->p[oscMixLFO] == 2) {
+                morphCrossFade->pos = kernel->morphBalanceSmooth + kernel->lfo2 * kernel->p[lfo2Amplitude];
+            } else {
+                morphCrossFade->pos = kernel->morphBalanceSmooth;
+            }
+
             filterCrossFade->pos = kernel->p[filterMix];
-            moog->res = kernel->resonanceSmooth;
+
+            if (kernel->p[resonanceLFO] == 1) {
+                moog->res = kernel->resonanceSmooth * (1 - ((1 + kernel->lfo1) / 2.0) * kernel->p[lfo1Amplitude]);
+            } else if (kernel->p[resonanceLFO] == 2) {
+                moog->res = kernel->resonanceSmooth * (1 - ((1 + kernel->lfo2) / 2.0) * kernel->p[lfo2Amplitude]);
+            } else {
+                moog->res = kernel->resonanceSmooth;
+            }
 
             for (int frameIndex = 0; frameIndex < frameCount; ++frameIndex) {
                 float oscmorph1_out = 0;
@@ -585,8 +656,15 @@ public:
             float synthOut = outL[i];
 
             float bitCrushOut = 0.0;
+
+            if (p[bitcrushLFO] == 1) {
+                bitcrush->srate = p[bitCrushSampleRate] * (1 - ((1 + lfo1) / 2.0) * p[lfo1Amplitude]);
+            } else if (p[bitcrushLFO] == 2) {
+                bitcrush->srate = p[bitCrushSampleRate] * (1 - ((1 + lfo2) / 2.0) * p[lfo2Amplitude]);
+            } else {
+                bitcrush->srate = p[bitCrushSampleRate];
+            }
             bitcrush->bitdepth = p[bitCrushDepth];
-            bitcrush->srate = p[bitCrushSampleRate];
             sp_bitcrush_compute(sp, bitcrush, &synthOut, &bitCrushOut);
 
             float panL = 0.0;
