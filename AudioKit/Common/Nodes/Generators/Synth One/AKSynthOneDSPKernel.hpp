@@ -830,7 +830,7 @@ public:
         0, // lfo2Index
         1, // lfo2Amplitude
         0, // lfo2Rate
-        1, // cutoffLFO
+        0, // cutoffLFO
         0, // resonanceLFO
         0, // oscMixLFO
         0, // sustainLFO
