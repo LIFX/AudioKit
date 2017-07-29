@@ -220,9 +220,17 @@ public:
             float extraMultiplier;
 
             if (kernel->p[pitchLFO] == 1) {
-                extraMultiplier = 1 + 0.1 * kernel->lfo1 * kernel->p[lfo1Amplitude];
+                if (kernel->lfo1 >= 0) {
+                    extraMultiplier = 1 + kernel->lfo1 * kernel->p[lfo1Amplitude];
+                } else {
+                    extraMultiplier = 1 + kernel->lfo1 * kernel->p[lfo1Amplitude] / 2.0;
+                }
             } else if (kernel->p[pitchLFO] == 2) {
-                extraMultiplier = 1 + 0.1 * kernel->lfo2 * kernel->p[lfo2Amplitude];
+                if (kernel->lfo2 >= 0) {
+                    extraMultiplier = 1 + kernel->lfo2 * kernel->p[lfo2Amplitude];
+                } else {
+                    extraMultiplier = 1 + kernel->lfo2 * kernel->p[lfo2Amplitude] / 2.0;
+                }
             } else {
                 extraMultiplier = 1.0;
             }
