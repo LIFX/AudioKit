@@ -22,15 +22,15 @@
 @synthesize parameterTree = _parameterTree;
 
 - (NSArray *)parameters {
-    NSMutableArray *temp = [NSMutableArray arrayWithCapacity:49];
-    for (int i = 0; i < 49; i++) {
+    NSMutableArray *temp = [NSMutableArray arrayWithCapacity:60];
+    for (int i = 0; i < 60; i++) {
         [temp setObject:[NSNumber numberWithFloat:_kernel.p[i]] atIndexedSubscript:i];
     }
     return [NSArray arrayWithArray:temp];
 }
 
 - (void)setParameters:(NSArray *)parameters {
-    float params[49] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    float params[60] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     for (int i = 0; i < parameters.count; i++) {
         params[i] = [parameters[i] floatValue];
     }
@@ -109,6 +109,18 @@
     AUParameter *lfo2AmplitudeAU =          [AUParameter parameter:@"lfo2Amplitude"          name:@"LFO 2 Amplitude"           address:lfo2Amplitude          min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
     AUParameter *lfo2RateAU =               [AUParameter parameter:@"lfo2Rate"               name:@"LFO 2 Rate"                address:lfo2Rate               min:0.0 max:1.0   unit:kAudioUnitParameterUnit_Generic];
     AUParameter *cutoffLFOAU =               [AUParameter parameter:@"cutoffLFO"               name:@"Cutoff LFO"                address:cutoffLFO               min:0.0 max:2.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *resonanceLFOAU =             [AUParameter parameter:@"resonanceLFO"            name:@"resonance LFO"             address:resonanceLFO            min:0.0 max:2.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *oscMixLFOAU =                [AUParameter parameter:@"oscMixLFO"               name:@"oscMixLFO"                address:oscMixLFO               min:0.0 max:2.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *sustainLFOAU =               [AUParameter parameter:@"sustainLFO"              name:@"sustainLFO"               address:sustainLFO              min:0.0 max:2.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *index1LFOAU =                [AUParameter parameter:@"index1LFO"               name:@"index1LFO"                address:index1LFO               min:0.0 max:2.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *index2LFOAU =                [AUParameter parameter:@"index2LFO"               name:@"index2LFO"                address:index2LFO               min:0.0 max:2.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *fmLFOAU =                    [AUParameter parameter:@"fmLFO"                   name:@"fmLFO"                    address:fmLFO                   min:0.0 max:2.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *detuneLFOAU =                [AUParameter parameter:@"detuneLFO"               name:@"detuneLFO"                address:detuneLFO               min:0.0 max:2.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *filterEnvLFOAU =             [AUParameter parameter:@"filterEnvLFO"            name:@"filterEnvLFO"             address:filterEnvLFO            min:0.0 max:2.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *pitchLFOAU =                 [AUParameter parameter:@"pitchLFO"                name:@"pitchLFO"                 address:pitchLFO                min:0.0 max:2.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *bitcrushLFOAU =              [AUParameter parameter:@"bitcrushLFO"             name:@"bitcrushLFO"              address:bitcrushLFO             min:0.0 max:2.0   unit:kAudioUnitParameterUnit_Generic];
+    AUParameter *autopanLFOAU =               [AUParameter parameter:@"autopanLFO"              name:@"autopanLFO"               address:autopanLFO              min:0.0 max:2.0   unit:kAudioUnitParameterUnit_Generic];
+
 
     // Initialize the parameter values.
     index1AU.value = 0;
@@ -159,8 +171,18 @@
     lfo2IndexAU.value = 0;
     lfo2AmplitudeAU.value = 1;
     lfo2RateAU.value = 0;
-    cutoffLFOAU.value = 1;
-
+    cutoffLFOAU.value = 0;
+    resonanceLFOAU.value = 0;
+    oscMixLFOAU.value = 0;
+    sustainLFOAU.value = 0;
+    index1LFOAU.value = 0;
+    index2LFOAU.value = 0;
+    fmLFOAU.value = 0;
+    detuneLFOAU.value = 0;
+    filterEnvLFOAU.value = 0;
+    pitchLFOAU.value = 0;
+    bitcrushLFOAU.value = 0;
+    autopanLFOAU.value = 0;
 
     _kernel.setParameter(index1, index1AU.value);
     _kernel.setParameter(index2, index2AU.value);
@@ -211,6 +233,17 @@
     _kernel.setParameter(lfo2Amplitude, lfo2AmplitudeAU.value);
     _kernel.setParameter(lfo2Rate, lfo2RateAU.value);
     _kernel.setParameter(cutoffLFO, cutoffLFOAU.value);
+    _kernel.setParameter(resonanceLFO, resonanceLFOAU.value);
+    _kernel.setParameter(oscMixLFO, oscMixLFOAU.value);
+    _kernel.setParameter(sustainLFO, sustainLFOAU.value);
+    _kernel.setParameter(index1LFO, index1LFOAU.value);
+    _kernel.setParameter(index2LFO, index2LFOAU.value);
+    _kernel.setParameter(fmLFO, fmLFOAU.value);
+    _kernel.setParameter(detuneLFO, detuneLFOAU.value);
+    _kernel.setParameter(filterEnvLFO, filterEnvLFOAU.value);
+    _kernel.setParameter(pitchLFO, pitchLFOAU.value);
+    _kernel.setParameter(bitcrushLFO, bitcrushLFOAU.value);
+    _kernel.setParameter(autopanLFO, autopanLFOAU.value);
 
     // Create the parameter tree.
     _parameterTree = [AUParameterTree createTreeWithChildren:@[
@@ -262,7 +295,18 @@
         lfo2IndexAU,
         lfo2AmplitudeAU,
         lfo2RateAU,
-        cutoffLFOAU
+        cutoffLFOAU,
+        resonanceLFOAU,
+        oscMixLFOAU,
+        sustainLFOAU,
+        index1LFOAU,
+        index2LFOAU,
+        fmLFOAU,
+        detuneLFOAU,
+        filterEnvLFOAU,
+        pitchLFOAU,
+        bitcrushLFOAU,
+        autopanLFOAU
     ]];
 
     parameterTreeBlock(SynthOne)

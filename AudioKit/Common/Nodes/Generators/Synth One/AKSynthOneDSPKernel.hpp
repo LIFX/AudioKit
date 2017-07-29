@@ -69,7 +69,18 @@ enum {
     lfo2Index = 45,
     lfo2Amplitude = 46,
     lfo2Rate = 47,
-    cutoffLFO = 48
+    cutoffLFO = 48,
+    resonanceLFO = 49,
+    oscMixLFO = 50,
+    sustainLFO = 51,
+    index1LFO = 52,
+    index2LFO = 53,
+    fmLFO = 54,
+    detuneLFO = 55,
+    filterEnvLFO = 56,
+    pitchLFO = 57,
+    bitcrushLFO = 58,
+    autopanLFO = 59
 
 };
 
@@ -252,8 +263,14 @@ public:
                 sp_adsr_compute(kernel->sp, fadsr, &internalGate, &filter);
                 
                 //                filter *= kernel->filterADSRMix;
-                
-                moog->freq = kernel->cutoffSmooth * (1 - ((1 + kernel->lfo1) / 2.0) * kernel->p[lfo1Amplitude]);
+
+                if (kernel->p[cutoffLFO] == 1) {
+                    moog->freq = kernel->cutoffSmooth * (1 - ((1 + kernel->lfo1) / 2.0) * kernel->p[lfo1Amplitude]);
+                } else if (kernel->p[cutoffLFO] == 2) {
+                    moog->freq = kernel->cutoffSmooth * (1 - ((1 + kernel->lfo2) / 2.0) * kernel->p[lfo2Amplitude]);
+                } else {
+                    moog->freq = kernel->cutoffSmooth;
+                }
                 moog->freq = moog->freq - moog->freq * kernel->p[filterADSRMix] * (1.0 - filter);
                 
                 if (moog->freq < 0.0) {
@@ -441,7 +458,7 @@ public:
 //    standardBankKernelFunctions()
 
     void setParameters(float params[]) {
-        for (int i = 0; i < 49; i++) {
+        for (int i = 0; i < 60; i++) {
             p[i] = params[i];
         }
     }
@@ -686,7 +703,7 @@ public:
 
     bool resetted = false;
 
-    float p[49] = {
+    float p[60] = {
         0, // index1
         0, // index2
         0.5, // morphBalance
@@ -735,8 +752,18 @@ public:
         0, // lfo2Index
         1, // lfo2Amplitude
         0, // lfo2Rate
-        1 // cutoffLFO
-
+        1, // cutoffLFO
+        0, // resonanceLFO
+        0, // oscMixLFO
+        0, // sustainLFO
+        0, // index1LFO
+        0, // index2LFO
+        0, // fmLFO
+        0, // detuneLFO
+        0, // filterEnvLFO
+        0, // pitchLFO
+        0, // bitcrushLFO
+        0 // autoPanLFO
     };
 
     // Ported values
