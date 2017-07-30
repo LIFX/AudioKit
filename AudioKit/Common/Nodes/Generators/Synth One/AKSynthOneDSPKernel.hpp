@@ -290,7 +290,7 @@ public:
             if (kernel->p[fmLFO] == 1) {
                 fmOsc->indx = kernel->p[fmAmount] * (1 + kernel->lfo1) * kernel->p[lfo1Amplitude];
             } else if (kernel->p[fmLFO] == 2) {
-                fmOsc->indx = kernel->p[fmAmount] * (1 +kernel->lfo2) * kernel->p[lfo2Amplitude];
+                fmOsc->indx = kernel->p[fmAmount] * (1 + kernel->lfo2) * kernel->p[lfo2Amplitude];
             } else {
                 fmOsc->indx = kernel->p[fmAmount];
             }
