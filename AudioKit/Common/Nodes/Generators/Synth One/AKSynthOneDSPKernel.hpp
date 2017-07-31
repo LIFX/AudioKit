@@ -256,9 +256,9 @@ public:
 
 
             if (kernel->p[detuneLFO] == 1) {
-                oscmorph2->freq += kernel->p[detuningOffset] * (1 + kernel->lfo1 * kernel->p[lfo1Amplitude]);
+                oscmorph2->freq += 2.0 * (kernel->p[detuningOffset] + 0.5) * (1 + kernel->lfo1 * kernel->p[lfo1Amplitude]);
             } else if (kernel->p[detuneLFO] == 2) {
-                oscmorph2->freq += kernel->p[detuningOffset] * (1 + kernel->lfo2 * kernel->p[lfo2Amplitude]);
+                oscmorph2->freq += 2.0 * (kernel->p[detuningOffset] + 0.5) * (1 + kernel->lfo2 * kernel->p[lfo2Amplitude]);
             } else {
                 oscmorph2->freq += kernel->p[detuningOffset];
             }
