@@ -243,11 +243,11 @@ public:
 
 
             if (kernel->p[index1LFO] == 1) {
-                oscmorph1->wtpos = fmax(0, kernel->p[index1] + kernel->lfo1 * kernel->p[lfo1Amplitude]);
+                oscmorph1->wtpos = fmax(0, 4.0 + kernel->p[index1] + kernel->lfo1 * kernel->p[lfo1Amplitude]);
             } else if (kernel->p[index1LFO] == 2) {
-                oscmorph1->wtpos = fmax(0, kernel->p[index1] + kernel->lfo2 * kernel->p[lfo2Amplitude]);
+                oscmorph1->wtpos = fmax(0, 4.0 + kernel->p[index1] + kernel->lfo2 * kernel->p[lfo2Amplitude]);
             } else {
-                oscmorph1->wtpos = kernel->p[index1];
+                oscmorph1->wtpos = 4.0 + kernel->p[index1];
             }
 
             
@@ -265,11 +265,11 @@ public:
             oscmorph2->freq = clamp(oscmorph2->freq, 0.0f, 22050.0f);
 
             if (kernel->p[index2LFO] == 1) {
-                oscmorph2->wtpos = fmax(0, kernel->p[index2] + kernel->lfo1 * kernel->p[lfo1Amplitude]);
+                oscmorph2->wtpos = fmax(0, 4.0 + kernel->p[index2] + kernel->lfo1 * kernel->p[lfo1Amplitude]);
             } else if (kernel->p[index2LFO] == 2) {
-                oscmorph2->wtpos = fmax(0, kernel->p[index2] + kernel->lfo2 * kernel->p[lfo2Amplitude]);
+                oscmorph2->wtpos = fmax(0, 4.0 + kernel->p[index2] + kernel->lfo2 * kernel->p[lfo2Amplitude]);
             } else {
-                oscmorph2->wtpos = kernel->p[index2];
+                oscmorph2->wtpos = 4.0 + kernel->p[index2];
             }
 
             float originalFrequencySub = subOsc->freq;
