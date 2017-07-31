@@ -666,9 +666,9 @@ public:
             float bitCrushOut = 0.0;
 
             if (p[bitcrushLFO] == 1) {
-                bitcrush->srate = p[bitCrushSampleRate] * (1 - ((1 + lfo1) / 2.0) * p[lfo1Amplitude]);
+                bitcrush->srate = p[bitCrushSampleRate] * (1 + 0.5 * lfo1 * p[lfo1Amplitude]);
             } else if (p[bitcrushLFO] == 2) {
-                bitcrush->srate = p[bitCrushSampleRate] * (1 - ((1 + lfo2) / 2.0) * p[lfo2Amplitude]);
+                bitcrush->srate = p[bitCrushSampleRate] * (1 + 0.5 * lfo2 * p[lfo2Amplitude]);
             } else {
                 bitcrush->srate = p[bitCrushSampleRate];
             }
