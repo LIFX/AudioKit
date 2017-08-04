@@ -627,31 +627,31 @@ public:
             sp_phasor_compute(sp, lfo1Phasor, nil, &lfo1);
             sp_phasor_compute(sp, lfo2Phasor, nil, &lfo2);
 
-            if (lfo1Shape == 0) { // Sine
+            if (p[lfo1Index] == 0) { // Sine
                 lfo1 = sin(lfo1 * M_PI * 2.0);
-            } else if (lfo1Shape == 1) { // Square
+            } else if (p[lfo1Index] == 1) { // Square
                 if (lfo1 > 0.5) {
                     lfo1 = 1.0;
                 } else {
                     lfo1 = -1.0;
                 }
-            } else if (lfo1Shape == 2) { // Saw
+            } else if (p[lfo1Index] == 2) { // Saw
                 lfo1 = (lfo1- 0.5) * 2.0;
-            } else if (lfo1Shape == 3) { // Reversed Saw
+            } else if (p[lfo1Index] == 3) { // Reversed Saw
                 lfo1 = (0.5 - lfo1) * 2.0;
             }
 
-            if (lfo2Shape == 0) { // Sine
+            if (p[lfo2Index] == 0) { // Sine
                 lfo2 = sin(lfo2 * M_PI * 2.0);
-            } else if (lfo2Shape == 1) { // Square
+            } else if (p[lfo2Index] == 1) { // Square
                 if (lfo2 > 0.5) {
                     lfo2 = 1.0;
                 } else {
                     lfo2 = -1.0;
                 }
-            } else if (lfo2Shape == 2) { // Saw
+            } else if (p[lfo2Index] == 2) { // Saw
                 lfo2 = (lfo2- 0.5) * 2.0;
-            } else if (lfo2Shape == 3) { // Reversed Saw
+            } else if (p[lfo2Index] == 3) { // Reversed Saw
                 lfo2 = (0.5 - lfo2) * 2.0;
             }
 
@@ -860,8 +860,6 @@ public:
 
     float lfo1 = 0.0;
     float lfo2 = 0.0;
-    float lfo1Shape = 0;
-    float lfo2Shape = 0;
 
     NoteState* playingNotes = nullptr;
     int playingNotesCount = 0;
