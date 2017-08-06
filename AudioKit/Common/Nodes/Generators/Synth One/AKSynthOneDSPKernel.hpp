@@ -441,10 +441,10 @@ public:
         sp_smoothdelay_create(&delayRR);
         sp_smoothdelay_create(&delayFillIn);
 
-        sp_smoothdelay_init(sp, delayL, 5.0, 512);
-        sp_smoothdelay_init(sp, delayR, 5.0, 512);
-        sp_smoothdelay_init(sp, delayRR, 5.0, 512);
-        sp_smoothdelay_init(sp, delayFillIn, 5.0, 512);
+        sp_smoothdelay_init(sp, delayL, 10.0, 512);
+        sp_smoothdelay_init(sp, delayR, 10.0, 512);
+        sp_smoothdelay_init(sp, delayRR, 10.0, 512);
+        sp_smoothdelay_init(sp, delayFillIn, 10.0, 512);
 
         sp_crossfade_create(&delayCrossfadeL);
         sp_crossfade_create(&delayCrossfadeR);
@@ -690,10 +690,10 @@ public:
             float delayOutRR = 0.0;
             float delayFillInOut = 0.0;
 
-            delayL->del = p[delayTime];
-            delayR->del = p[delayTime];
-            delayRR->del = p[delayTime]/2.0;
-            delayFillIn->del = p[delayTime]/2.0;
+            delayL->del = p[delayTime] * 2.0;
+            delayR->del = p[delayTime] * 2.0;
+            delayRR->del = p[delayTime];
+            delayFillIn->del = p[delayTime];
             delayL->feedback = p[delayFeedback];
             delayR->feedback = p[delayFeedback];
 
