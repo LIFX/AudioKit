@@ -690,10 +690,11 @@ public:
             float delayOutRR = 0.0;
             float delayFillInOut = 0.0;
 
-            delayL->del = p[delayTime] * 2.0;
-            delayR->del = p[delayTime] * 2.0;
-            delayRR->del = p[delayTime];
-            delayFillIn->del = p[delayTime];
+            // Adding small value to delay times so they are non-zero
+            delayL->del = p[delayTime] * 2.0 + 0.0001;
+            delayR->del = p[delayTime] * 2.0 + 0.0001;
+            delayRR->del = p[delayTime] + 0.0001;
+            delayFillIn->del = p[delayTime] + 0.0001;
             delayL->feedback = p[delayFeedback];
             delayR->feedback = p[delayFeedback];
 
