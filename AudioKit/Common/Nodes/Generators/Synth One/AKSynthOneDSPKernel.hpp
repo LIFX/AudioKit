@@ -10,6 +10,9 @@
 
 #import "AKSoundpipeKernel.hpp"
 #import <vector>
+#import <list>
+
+#define NUM_MIDI_NOTES (128)
 
 static inline double pow2(double x) {
     return x * x;
@@ -95,11 +98,15 @@ public:
         
         enum { stageOff, stageOn, stageRelease };
         int stage = stageOff;
-        
+
+        enum { noteTypePoly, noteTypeMono };
+        int noteType = noteTypePoly;
+
         float internalGate = 0;
         float amp = 0;
         float filter = 0;
-        
+        int noteNumber;
+
         sp_adsr *adsr;
         sp_adsr *fadsr;
         sp_oscmorph *oscmorph1;
@@ -114,6 +121,7 @@ public:
         sp_crossfade *filterCrossFade;
         
         void init() {
+
             sp_adsr_create(&adsr);
             sp_adsr_init(kernel->sp, adsr);
             sp_adsr_create(&fadsr);
@@ -152,71 +160,167 @@ public:
         
 
         void clear() {
+            internalGate = 0;
             stage = stageOff;
             amp = 0;
         }
-        
+
+
+        // playingNotes linked list management
+        inline void removePlayingNote() {
+            if (noteType == noteTypeMono)
+                return;
+            kernel->playingNoteStates.remove(noteNumber);
+        }
+
+        // playingNotes linked list management
+        inline void addPlayingNote() {
+            if (noteType == noteTypeMono)
+                return;
+            kernel->playingNoteStates.push_front(noteNumber);
+        }
+
+        // heldNotes linked list management
+        inline void removeHeldNote() {
+            if (noteType == noteTypeMono)
+                return;
+            kernel->heldNoteStates.remove(noteNumber);
+        }
+
+        // heldNotes linked list management
+        inline void addHeldNote() {
+            if (noteType == noteTypeMono)
+                return;
+            kernel->heldNoteStates.push_front(noteNumber);
+        }
+
         // linked list management
-        void remove() {
-            if (prev) prev->next = next;
-            else kernel->playingNotes = next;
-            
-            if (next) next->prev = prev;
-            
-            //prev = next = nullptr; Had to remove due to a click, potentially bad
-            
-            --kernel->playingNotesCount;
-            sp_oscmorph_destroy(&oscmorph1);
-            sp_oscmorph_destroy(&oscmorph2);
-            sp_crossfade_destroy(&morphCrossFade);
-            sp_crossfade_destroy(&filterCrossFade);
-            sp_noise_destroy(&noise);
-            sp_osc_destroy(&subOsc);
-            sp_fosc_destroy(&fmOsc);
-            sp_moogladder_destroy(&moog);
-        }
-        
-        void add() {
-            init();
-            prev = nullptr;
-            next = kernel->playingNotes;
-            if (next) next->prev = this;
-            kernel->playingNotes = this;
-            ++kernel->playingNotesCount;
-        }
-        
+//        void remove() {
+//            if (prev) prev->next = next;
+//            else kernel->playingNotes = next;
+//            
+//            if (next) next->prev = prev;
+//            
+//            //prev = next = nullptr; Had to remove due to a click, potentially bad
+//            
+//            --kernel->playingNotesCount;
+//            sp_oscmorph_destroy(&oscmorph1);
+//            sp_oscmorph_destroy(&oscmorph2);
+//            sp_crossfade_destroy(&morphCrossFade);
+//            sp_crossfade_destroy(&filterCrossFade);
+//            sp_noise_destroy(&noise);
+//            sp_osc_destroy(&subOsc);
+//            sp_fosc_destroy(&fmOsc);
+//            sp_moogladder_destroy(&moog);
+//        }
+//
+//        void add() {
+//            init();
+//            prev = nullptr;
+//            next = kernel->playingNotes;
+//            if (next) next->prev = this;
+//            kernel->playingNotes = this;
+//            ++kernel->playingNotesCount;
+//        }
+
+        // NOTE OFF/ON POLY/MONO
         void noteOn(int noteNumber, int velocity) {
-            noteOn(noteNumber, velocity, (float)noteToHz(noteNumber));
-        }
-        
-        void noteOn(int noteNumber, int velocity, float frequency) {
-            baseNote = noteNumber;
             if (velocity == 0) {
+                // NOTE OFF...put into release mode
                 if (stage == stageOn) {
                     stage = stageRelease;
                     internalGate = 0;
+                    if (noteType == noteTypePoly) {
+                        // notes are removed from playingNotes list in run()
+                        removeHeldNote(); // notes are removed from heldNotes here
+                    }
+                    // MONO: update monoFrequency target, keep amp/filt envelopes open
+                    if (kernel->p[isMono]) {
+                        if ( kernel->heldNoteStates.size() > 0 ) {
+                            // the case where you had more than one note held and released one (CACA): update to head of heldNoteStates
+                            const int headNN = kernel->heldNoteStates.front();
+                            NoteState headNoteState = kernel->noteStates[headNN];
+                            if(noteType==noteTypeMono)
+                                this->noteNumber = headNN;
+//                            kernel->monoFrequency = headNoteState.oscmorph1->freq;
+                            stage = stageOn;
+                            internalGate = 1;
+                        }
+                    }
                 }
             } else {
-                if (stage == stageOff) { add(); }
+                // NOTE ON
+                if (stage == stageOff && noteType == noteTypePoly) {
+                    addPlayingNote(); // add to head of playingNotes list
+                }
+
+                // if this note is in the heldNotes list remove it...
+                if(internalGate == 1 && noteType == noteTypePoly)
+                    removeHeldNote();
+
+                // ...then add to head of heldNotes list
+                if (noteType == noteTypePoly)
+                    addHeldNote();
+
+                // init
+                const float hz = noteToHz(noteNumber);
+                const float amp = (float)pow2(velocity / 127.);
                 oscmorph1->freq = (float)noteToHz(noteNumber + (int)kernel->p[morph1SemitoneOffset]);
                 oscmorph1->amp = (float)pow2(velocity / 127.);
                 oscmorph2->freq = (float)noteToHz(noteNumber + (int)kernel->p[morph2SemitoneOffset]);
                 oscmorph2->amp = (float)pow2(velocity / 127.);
-                subOsc->freq = (float)noteToHz(noteNumber);
-                subOsc->amp = (float)pow2(velocity / 127.);
-                
-                fmOsc->freq = (float)noteToHz(noteNumber);
-                fmOsc->amp = (float)pow2(velocity / 127.);
-                
-                noise->amp = (float)pow2(velocity / 127.);
+                subOsc->freq = hz;
+                subOsc->amp = amp;
+
+                fmOsc->freq = hz;
+                fmOsc->amp = amp;
+
+                noise->amp = amp;
                 stage = stageOn;
                 internalGate = 1;
+
+                if(noteType == noteTypeMono) {
+                    this->noteNumber = noteNumber;
+//                    kernel->monoFrequency = hz; // mono frequency target
+                }
             }
         }
+
         
+//        void noteOn(int noteNumber, int velocity, float frequency) {
+//            baseNote = noteNumber;
+//            if (velocity == 0) {
+//                if (stage == stageOn) {
+//                    stage = stageRelease;
+//                    internalGate = 0;
+//                }
+//            } else {
+//                if (stage == stageOff) { add(); }
+//                oscmorph1->freq = (float)noteToHz(noteNumber + (int)kernel->p[morph1SemitoneOffset]);
+//                oscmorph1->amp = (float)pow2(velocity / 127.);
+//                oscmorph2->freq = (float)noteToHz(noteNumber + (int)kernel->p[morph2SemitoneOffset]);
+//                oscmorph2->amp = (float)pow2(velocity / 127.);
+//                subOsc->freq = (float)noteToHz(noteNumber);
+//                subOsc->amp = (float)pow2(velocity / 127.);
+//                
+//                fmOsc->freq = (float)noteToHz(noteNumber);
+//                fmOsc->amp = (float)pow2(velocity / 127.);
+//                
+//                noise->amp = (float)pow2(velocity / 127.);
+//                stage = stageOn;
+//                internalGate = 1;
+//            }
+//        }
+
 
         void run(int frameCount, float *outL, float *outR)
         {
+            // don't render notes that are off
+            if (stage == stageOff) {
+                removePlayingNote(); // mutates linked list
+                return;
+            }
+
             float extraMultiplier;
 
             if (kernel->p[pitchLFO] == 1) {
@@ -380,7 +484,15 @@ public:
                 
                 sp_moogladder_compute(kernel->sp, moog, &synthOut, &filterOut);
                 sp_crossfade_compute(kernel->sp, filterCrossFade, &synthOut, &filterOut, &finalOut);
-                
+
+                // mono mode clears poly notes output
+                if(kernel->p[isMono] == true && noteType == noteTypePoly)
+                    finalOut = 0.0;
+
+                // poly mode clears out mono output
+                if(kernel->p[isMono] == false && noteType == noteTypeMono)
+                    finalOut = 0.0;
+
                 *outL++ += finalOut;
                 *outR++ += finalOut;
                 
@@ -389,25 +501,40 @@ public:
             oscmorph2->freq = originalFrequency2;
             subOsc->freq = originalFrequencySub;
             fmOsc->freq = originalFrequencyFM;
+
+            // if note is in release, and below threshold set to noteOff mode
             if (stage == stageRelease && amp < 0.00001) {
-                clear();
-                remove();
+                clear(); // sets stage to stageOff
+                if(noteType == noteTypePoly)
+                    removePlayingNote(); // mutates linked list
+//                kernel->print_debug();
             }
         }
-        
+
     };
 
     // MARK: Member Functions
 
     AKSynthOneDSPKernel() {
-        noteStates.resize(128);
-        for (NoteState& state : noteStates) {
-            state.kernel = this;
-        }
+//        noteStates.resize(128);
+//        for (NoteState& state : noteStates) {
+//            state.kernel = this;
+//        }
     }
 
     void init(int _channels, double _sampleRate) override {
         AKSoundpipeKernel::init(_channels, _sampleRate);
+
+        // default wavetable(s)
+        sp_ftbl_create(sp, &sine, tbl_size);
+        sp_gen_sine(sp, sine);
+        for (int i = 0; i < 4; i++) {
+            sp_ftbl_create(sp, &ft_array[i], tbl_size);
+            for (int j = 0; j < tbl_size; j++) {
+                ft_array[i]->tbl[j] = sine->tbl[j];
+            }
+        }
+
         sp_ftbl_create(sp, &sine, 2048);
         sp_gen_sine(sp, sine);
 
@@ -462,77 +589,107 @@ public:
         sp_crossfade_init(sp, revCrossfadeL);
         sp_crossfade_init(sp, revCrossfadeR);
 
+        // POLY
+        noteStates.resize(NUM_MIDI_NOTES);
+        int nn = 0;
+        for (NoteState& state : noteStates) {
+            state.kernel = this;
+            state.init();
+            state.stage = NoteState::stageOff;
+            state.amp = 0.0;
+            state.noteNumber = nn++;
+            state.noteType = NoteState::noteTypePoly;
+        }
+
+        // MONO
+        monoNote.kernel = this;
+        monoNote.init();
+        monoNote.stage = NoteState::stageOff;
+        monoNote.amp = 0.0;
+        monoNote.noteType = NoteState::noteTypeMono;
     }
-    
-    void setupMono() {
-        
-        sp_adsr_create(&adsr);
-        sp_adsr_init(sp, adsr);
-        sp_adsr_create(&fadsr);
-        sp_adsr_init(sp, fadsr);
-        
-        sp_oscmorph_create(&oscmorph1);
-        sp_oscmorph_init(sp, oscmorph1, ft_array, 4, 0);
-        oscmorph1->freq = 0;
-        oscmorph1->amp = 0;
-        oscmorph1->wtpos = 0;
-        
-        sp_oscmorph_create(&oscmorph2);
-        sp_oscmorph_init(sp, oscmorph2, ft_array, 4, 0);
-        oscmorph2->freq = 0;
-        oscmorph2->amp = 0;
-        oscmorph2->wtpos = 0;
-        
-        sp_crossfade_create(&morphCrossFade);
-        sp_crossfade_init(sp, morphCrossFade);
-        
-        sp_crossfade_create(&filterCrossFade);
-        sp_crossfade_init(sp, filterCrossFade);
-        
-        sp_osc_create(&subOsc);
-        sp_osc_init(sp, subOsc, sine, 0.0);
-        
-        sp_fosc_create(&fmOsc);
-        sp_fosc_init(sp, fmOsc, sine);
-        
-        sp_noise_create(&noise);
-        sp_noise_init(sp, noise);
-        
-        sp_moogladder_create(&moog);
-        sp_moogladder_init(sp, moog);
-        
-        isMonoSetup = true;
-        
-    }
-    
+
+//    void setupMono() {
+//        
+//        sp_adsr_create(&adsr);
+//        sp_adsr_init(sp, adsr);
+//        sp_adsr_create(&fadsr);
+//        sp_adsr_init(sp, fadsr);
+//        
+//        sp_oscmorph_create(&oscmorph1);
+//        sp_oscmorph_init(sp, oscmorph1, ft_array, 4, 0);
+//        oscmorph1->freq = 0;
+//        oscmorph1->amp = 0;
+//        oscmorph1->wtpos = 0;
+//        
+//        sp_oscmorph_create(&oscmorph2);
+//        sp_oscmorph_init(sp, oscmorph2, ft_array, 4, 0);
+//        oscmorph2->freq = 0;
+//        oscmorph2->amp = 0;
+//        oscmorph2->wtpos = 0;
+//        
+//        sp_crossfade_create(&morphCrossFade);
+//        sp_crossfade_init(sp, morphCrossFade);
+//        
+//        sp_crossfade_create(&filterCrossFade);
+//        sp_crossfade_init(sp, filterCrossFade);
+//        
+//        sp_osc_create(&subOsc);
+//        sp_osc_init(sp, subOsc, sine, 0.0);
+//        
+//        sp_fosc_create(&fmOsc);
+//        sp_fosc_init(sp, fmOsc, sine);
+//        
+//        sp_noise_create(&noise);
+//        sp_noise_init(sp, noise);
+//        
+//        sp_moogladder_create(&moog);
+//        sp_moogladder_init(sp, moog);
+//        
+//        isMonoSetup = true;
+//        
+//    }
+
     void setupWaveform(uint32_t waveform, uint32_t size) {
         tbl_size = size;
-        sp_ftbl_create(sp, &ft_array[waveform], tbl_size);
+//        sp_ftbl_create(sp, &ft_array[waveform], tbl_size);
     }
     
     void setWaveformValue(uint32_t waveform, uint32_t index, float value) {
         ft_array[waveform]->tbl[index] = value;
     }
-    
+
+
+
+    // harsh
     void reset() {
+        playingNoteStates.clear();
+        heldNoteStates.clear();
         for (NoteState& state : noteStates) {
             state.clear();
         }
-        playingNotes = nullptr;
-
-        playingNotesCount = 0;
-        resetted = true;
+        monoNote.clear();
     }
 
     void startNote(int note, int velocity) {
         noteStates[note].noteOn(note, velocity);
+        monoNote.noteOn(note, velocity);
     }
+
     void startNote(int note, int velocity, float frequency) {
-        noteStates[note].noteOn(note, velocity, frequency);
+        noteStates[note].noteOn(note, velocity);
     }
 
     void stopNote(int note) {
         noteStates[note].noteOn(note, 0);
+        monoNote.noteOn(note, 0);
+    }
+
+    void stopAllNotes() {
+        for(int i=0; i<NUM_MIDI_NOTES; i++) {
+            noteStates[i].noteOn(i, 0);
+        }
+        monoNote.noteOn(60, 0);
     }
 //    standardBankKernelFunctions()
 
@@ -553,37 +710,31 @@ public:
     void startRamp(AUParameterAddress address, AUValue value, AUAudioFrameCount duration) override {
     }
 
-    virtual void handleMIDIEvent(AUMIDIEvent const& midiEvent) override { \
-        if (midiEvent.length != 3) return; \
-        uint8_t status = midiEvent.data[0] & 0xF0; \
-        switch (status) { \
-            case 0x80 : {  \
-                uint8_t note = midiEvent.data[1]; \
-                if (note > 127) break; \
-                noteStates[note].noteOn(note, 0); \
-                break; \
-            } \
-            case 0x90 : {  \
-                uint8_t note = midiEvent.data[1]; \
-                uint8_t veloc = midiEvent.data[2]; \
-                if (note > 127 || veloc > 127) break; \
-                noteStates[note].noteOn(note, veloc); \
-                break; \
-            } \
-            case 0xB0 : { \
-                uint8_t num = midiEvent.data[1]; \
-                if (num == 123) { \
-                    NoteState* noteState = playingNotes; \
-                    while (noteState) { \
-                        noteState->clear(); \
-                        noteState = noteState->next; \
-                    } \
-                    playingNotes = nullptr; \
-                    playingNotesCount = 0; \
-                } \
-                break; \
-            } \
-        } \
+    virtual void handleMIDIEvent(AUMIDIEvent const& midiEvent) override {
+        if (midiEvent.length != 3) return;
+        uint8_t status = midiEvent.data[0] & 0xF0;
+        switch (status) {
+            case 0x80 : { // note off
+                uint8_t note = midiEvent.data[1];
+                if (note > 127) break;
+                startNote(note, 0);
+                break;
+            }
+            case 0x90 : { // note on
+                uint8_t note = midiEvent.data[1];
+                uint8_t veloc = midiEvent.data[2];
+                if (note > 127 || veloc > 127) break;
+                startNote(note, veloc);
+                break;
+            }
+            case 0xB0 : { // control
+                uint8_t num = midiEvent.data[1];
+                if (num == 123) { // all notes off
+                    stopAllNotes();
+                }
+                break;
+            }
+        }
     }
 
     void handleTempoSetting(float currentTempo) {
@@ -602,23 +753,32 @@ public:
             outL[i] = 0.0f;
             outR[i] = 0.0f;
         }
-        
-        if (p[isMono] == 1) {
-            NSLog(@"WARNING IS MONO");
-            if (isMonoSetup == false) {
-                setupMono();
-            }
-            
-            //monoRun(frameCount, outL, outR);
-            
-        } else {
-            
-            NoteState* noteState = playingNotes;
-            while (noteState) {
-                noteState->run(frameCount, outL, outR);
-                noteState = noteState->next;
-            }
+
+        // POLY: RENDER every note in playingNotes
+        for (int i = 0; i<NUM_MIDI_NOTES; i++) {
+            NoteState& note = noteStates[i];
+            note.run(frameCount, outL, outR);
         }
+
+        // MONO: RENDER
+        monoNote.run(frameCount, outL, outR);
+
+//        if (p[isMono] == 1) {
+//            NSLog(@"WARNING IS MONO");
+//            if (isMonoSetup == false) {
+//                setupMono();
+//            }
+//            
+//            //monoRun(frameCount, outL, outR);
+//            
+//        } else {
+//            
+//            NoteState* noteState = playingNotes;
+//            while (noteState) {
+//                noteState->run(frameCount, outL, outR);
+//                noteState = noteState->next;
+//            }
+//        }
 
         for (AUAudioFrameCount i = 0; i < frameCount; ++i) {
 
@@ -862,30 +1022,35 @@ public:
     float lfo1 = 0.0;
     float lfo2 = 0.0;
 
-    NoteState* playingNotes = nullptr;
-    int playingNotesCount = 0;
+//    NoteState* playingNotes = nullptr;
+//    int playingNotesCount = 0;
 
     // MONO Stuff
     
-    bool isMonoSetup = false;
-    
-    float internalGate = 0;
-    float amp = 0;
-    float filter = 0;
-    
-    sp_adsr *adsr;
-    sp_adsr *fadsr;
-    sp_oscmorph *oscmorph1;
-    sp_oscmorph *oscmorph2;
-    sp_crossfade *morphCrossFade;
-    sp_osc *subOsc;
-    sp_fosc *fmOsc;
-    
-    sp_noise *noise;
-    
-    sp_moogladder *moog;
-    sp_crossfade *filterCrossFade;
-    
-    bool notesHeld = false;
+//    bool isMonoSetup = false;
+//    
+//    float internalGate = 0;
+//    float amp = 0;
+//    float filter = 0;
+//    
+//    sp_adsr *adsr;
+//    sp_adsr *fadsr;
+//    sp_oscmorph *oscmorph1;
+//    sp_oscmorph *oscmorph2;
+//    sp_crossfade *morphCrossFade;
+//    sp_osc *subOsc;
+//    sp_fosc *fmOsc;
+//    
+//    sp_noise *noise;
+//    sp_moogladder *moog;
+//    sp_crossfade *filterCrossFade;
+
+    // playingNotes have amp env in attack/decay/release and need to be rendered
+    std::list<int> playingNoteStates;
+
+    // heldNotes is a linked list of notes which have had an On event but no Off event.
+    std::list<int> heldNoteStates;
+
+    NoteState monoNote;
 };
 
