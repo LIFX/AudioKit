@@ -48,11 +48,11 @@ extension AVAudioEngine {
             engine.connect(finalMixer.avAudioNode, to: engine.outputNode)
         }
     }
-	
+
 	#if os(iOS)
-	private static let cx = CTCallCenter()
+	private static let callCenter = CTCallCenter()
 	private static var microphoneLocked: Bool {
-		return cx.currentCalls?.count ?? 0 > 0
+		return callCenter.currentCalls?.count ?? 0 > 0
 	}
 	#else
 	private static let microphoneLocked = false
