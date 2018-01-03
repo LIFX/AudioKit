@@ -221,84 +221,87 @@ extension AVAudioEngine {
         start()
     }
 
+	open static func start() {
+		do {
+			try startSafely()
+		} catch {
+			fatalError("AudioKit: Could not start engine. error: \(error).")
+		}
+	}
+
     /// Start up the audio engine
-    open static func start() {
+    open static func startSafely() throws {
         if output == nil {
             AKLog("AudioKit: No output node has been set yet, no processing will happen.")
         }
         // Start the engine.
-        do {
-            self.engine.prepare()
+		self.engine.prepare()
 
-            #if os(iOS)
-                if AKSettings.enableRouteChangeHandling {
-                    NotificationCenter.default.addObserver(
-                        self,
-                        selector: #selector(AudioKit.restartEngineAfterRouteChange),
-                        name: .AVAudioSessionRouteChange,
-                        object: nil)
-                }
-            #endif
-            #if !os(macOS)
-                if AKSettings.audioInputEnabled {
+		#if os(iOS)
+			if AKSettings.enableRouteChangeHandling {
+				NotificationCenter.default.addObserver(
+					self,
+					selector: #selector(AudioKit.restartEngineAfterRouteChange),
+					name: .AVAudioSessionRouteChange,
+					object: nil)
+			}
+		#endif
+		#if !os(macOS)
+			if AKSettings.audioInputEnabled {
 
-                #if os(iOS)
-                    if AKSettings.defaultToSpeaker {
-                        try AKSettings.setSession(category: .playAndRecord,
-                                                  with: .defaultToSpeaker)
+			#if os(iOS)
+				if AKSettings.defaultToSpeaker {
+					try AKSettings.setSession(category: .playAndRecord,
+											  with: .defaultToSpeaker)
 
-                        // listen to AVAudioEngineConfigurationChangeNotification
-                        // and restart the engine if it is stopped.
-                        NotificationCenter.default.addObserver(
-                            self,
-                            selector: #selector(AudioKit.audioEngineConfigurationChange),
-                            name: .AVAudioEngineConfigurationChange,
-                            object: engine)
+					// listen to AVAudioEngineConfigurationChangeNotification
+					// and restart the engine if it is stopped.
+					NotificationCenter.default.addObserver(
+						self,
+						selector: #selector(AudioKit.audioEngineConfigurationChange),
+						name: .AVAudioEngineConfigurationChange,
+						object: engine)
 
-                    } else if AKSettings.useBluetooth {
+				} else if AKSettings.useBluetooth {
 
-                        if #available(iOS 10.0, *) {
-                            let options: AVAudioSessionCategoryOptions = [.allowBluetooth,
-                                                                          .allowBluetoothA2DP,
-                                                                          .mixWithOthers]
-                            try AKSettings.setSession(category: .playAndRecord, with: options)
-                        } else {
-                            // Fallback on earlier versions
-                            try AKSettings.setSession(category: .playAndRecord, with: .mixWithOthers)
-                        }
+					if #available(iOS 10.0, *) {
+						let options: AVAudioSessionCategoryOptions = [.allowBluetooth,
+																	  .allowBluetoothA2DP,
+																	  .mixWithOthers]
+						try AKSettings.setSession(category: .playAndRecord, with: options)
+					} else {
+						// Fallback on earlier versions
+						try AKSettings.setSession(category: .playAndRecord, with: .mixWithOthers)
+					}
 
-                    } else if AKSettings.bluetoothOptions.isNotEmpty {
-                        let opts: AVAudioSessionCategoryOptions = [.mixWithOthers]
-                        try AKSettings.setSession(category: .playAndRecord,
-                                                  with: opts.union(AKSettings.bluetoothOptions))
-                    } else {
-                        try AKSettings.setSession(category: .playAndRecord, with: .mixWithOthers)
-                    }
-                #else
-                    // tvOS
-                    try AKSettings.setSession(category: .playAndRecord)
+				} else if AKSettings.bluetoothOptions.isNotEmpty {
+					let opts: AVAudioSessionCategoryOptions = [.mixWithOthers]
+					try AKSettings.setSession(category: .playAndRecord,
+											  with: opts.union(AKSettings.bluetoothOptions))
+				} else {
+					try AKSettings.setSession(category: .playAndRecord, with: .mixWithOthers)
+				}
+			#else
+				// tvOS
+				try AKSettings.setSession(category: .playAndRecord)
 
-                #endif
+			#endif
 
-                } else if AKSettings.playbackWhileMuted {
-                    try AKSettings.setSession(category: .playback)
-                } else {
-                    try AKSettings.setSession(category: .ambient)
+			} else if AKSettings.playbackWhileMuted {
+				try AKSettings.setSession(category: .playback)
+			} else {
+				try AKSettings.setSession(category: .ambient)
 
-                }
-            #if os(iOS)
-                try AVAudioSession.sharedInstance().setActive(true)
-            #endif
+			}
+		#if os(iOS)
+			try AVAudioSession.sharedInstance().setActive(true)
+		#endif
 
-            #endif
+		#endif
 
-            try self.engine.start()
+		try self.engine.start()
 
-            shouldBeRunning = true
-        } catch {
-            fatalError("AudioKit: Could not start engine. error: \(error).")
-        }
-
+		shouldBeRunning = true
     }
 
     /// Stop the audio engine
