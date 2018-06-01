@@ -234,8 +234,6 @@ extension AVAudioEngine {
         if output == nil {
             AKLog("AudioKit: No output node has been set yet, no processing will happen.")
         }
-        // Start the engine.
-		self.engine.prepare()
 
 		#if os(iOS)
 			if AKSettings.enableRouteChangeHandling {
