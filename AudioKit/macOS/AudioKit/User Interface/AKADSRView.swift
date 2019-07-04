@@ -5,6 +5,7 @@
 //  Created by Aurelius Prochazka, revision history on Githbub.
 //  Copyright © 2017 Aurelius Prochazka. All rights reserved.
 //
+import AudioKit
 
 public typealias ADSRCallback = (Double, Double, Double, Double) -> Void
 
@@ -76,7 +77,7 @@ public class AKADSRView: NSView {
         needsDisplay = true
     }
 
-    public init(frame: CGRect = CGRect(x: 0, y: 0, width: 440, height: 150),
+    public init(frame: CGRect = CGRect(width: 440, height: 150),
                 callback: @escaping ADSRCallback) {
         self.callback = callback
         super.init(frame: frame)

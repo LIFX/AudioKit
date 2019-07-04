@@ -5,6 +5,7 @@
 //  Created by Aurelius Prochazka, revision history on Github.
 //  Copyright © 2018 AudioKit. All rights reserved.
 //
+import AudioKit
 
 extension Notification.Name {
     static let IAAConnected = Notification.Name(rawValue: "IAAConnected")
@@ -12,14 +13,17 @@ extension Notification.Name {
 }
 
 /// Plot the output from any node in an signal processing graph
+///
+/// By default this plots the output of AudioKit.output
 @IBDesignable
 open class AKNodeOutputPlot: EZAudioPlot {
 
     public var isConnected = false
+    public var isNotConnected: Bool { return !isConnected }
 
     internal func setupNode(_ input: AKNode?) {
-        if !isConnected {
-            input?.avAudioNode.installTap(
+        if isNotConnected {
+            input?.avAudioUnitOrNode.installTap(
                 onBus: 0,
                 bufferSize: bufferSize,
                 format: nil) { [weak self] (buffer, _) in
@@ -46,7 +50,7 @@ open class AKNodeOutputPlot: EZAudioPlot {
 
     @objc open func pause() {
         if isConnected {
-            node?.avAudioNode.removeTap(onBus: 0)
+            node?.avAudioUnitOrNode.removeTap(onBus: 0)
             isConnected = false
         }
     }
@@ -55,7 +59,7 @@ open class AKNodeOutputPlot: EZAudioPlot {
         setupNode(node)
     }
 
-    func setupReconnection() {
+    private func setupReconnection() {
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(reconnect),
                                                name: .IAAConnected,
@@ -69,6 +73,8 @@ open class AKNodeOutputPlot: EZAudioPlot {
     internal var bufferSize: UInt32 = 1_024
 
     /// The node whose output to graph
+    ///
+    /// Defaults to AudioKit.output
     @objc open var node: AKNode? {
         willSet {
             pause()
@@ -79,7 +85,7 @@ open class AKNodeOutputPlot: EZAudioPlot {
     }
 
     deinit {
-        node?.avAudioNode.removeTap(onBus: 0)
+        node?.avAudioUnitOrNode.removeTap(onBus: 0)
     }
 
     /// Required coder-based initialization (for use with Interface Builder)
@@ -99,7 +105,7 @@ open class AKNodeOutputPlot: EZAudioPlot {
     ///   - width: Width of the view
     ///   - height: Height of the view
     ///
-    @objc public init(_ input: AKNode? = AudioKit.output, frame: CGRect, bufferSize: Int = 1_024) {
+    @objc public init(_ input: AKNode? = AudioKit.output, frame: CGRect = CGRect.zero, bufferSize: Int = 1_024) {
         super.init(frame: frame)
         self.plotType = .buffer
         self.backgroundColor = AKColor.white

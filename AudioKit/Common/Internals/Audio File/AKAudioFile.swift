@@ -22,6 +22,8 @@ extension AVAudioCommonFormat: CustomStringConvertible {
             return "PCMFormatInt16"
         case .pcmFormatInt32:
             return "PCMFormatInt32"
+        @unknown default:
+            fatalError("Unknown Type")
         }
     }
 }
@@ -220,6 +222,9 @@ extension AVAudioCommonFormat: CustomStringConvertible {
     open var avAsset: AVURLAsset {
         return internalAVAsset
     }
+
+    /// will have a reference to the current export session when exporting async
+    open var currentExportSession: AVAssetExportSession?
 
     // Make our types Human Friendly™
     public typealias FloatChannelData = [[Float]]

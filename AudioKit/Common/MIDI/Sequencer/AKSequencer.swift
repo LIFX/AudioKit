@@ -1,5 +1,5 @@
 //
-//  AKMusicSequencer.swift
+//  AKSequencer.swift
 //  AudioKit
 //
 //  Created by Aurelius Prochazka, revision history on GitHub.
@@ -7,7 +7,7 @@
 //
 
 /// Sequencer based on tried-and-true CoreAudio/MIDI Sequencing
-open class AKSequencer {
+open class AKSequencer: NSObject {
 
     /// Music sequence
     open var sequence: MusicSequence?
@@ -25,7 +25,7 @@ open class AKSequencer {
     open private(set) var loopEnabled: Bool = false
 
     /// Sequencer Initialization
-    @objc public init() {
+    override public init() {
         NewMusicSequence(&sequence)
         if let existingSequence = sequence {
             sequencePointer = UnsafeMutablePointer<MusicSequence>(existingSequence)
@@ -176,7 +176,8 @@ open class AKSequencer {
         return rate
     }
 
-    /// Set the tempo of the sequencer
+    /// Clears all existing tempo events and adds single tempo event at start
+    /// Will also adjust the tempo immediately if sequence is playing when called
     open func setTempo(_ bpm: Double) {
         let constrainedTempo = (10...280).clamp(bpm)
 
@@ -723,7 +724,7 @@ open class AKSequencer {
         tracks.remove(at: trackIndex)
     }
 
-    /// Clear all events from all tracks within the specified range
+    /// Clear all non-tempo events from all tracks within the specified range
     //
     /// - Parameters:
     ///   - start: Start of the range to clear, in beats (inclusive)

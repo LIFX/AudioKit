@@ -35,6 +35,7 @@ class AudioEngine {
         }
         player = AKPlayer(audioFile: file)
         player.isLooping = true
+        player.buffering = .always
 
         // Next we'll connect the audio player to a delay effect
         delay = AKDelay(player)
