@@ -16,6 +16,9 @@ typedef NS_ENUM(AUParameterAddress, AKSamplerParameter)
     AKSamplerParameterMasterVolume,
     AKSamplerParameterPitchBend,
     AKSamplerParameterVibratoDepth,
+    AKSamplerParameterVibratoFrequency,
+    AKSamplerParameterVoiceVibratoDepth,
+    AKSamplerParameterVoiceVibratoFrequency,
     AKSamplerParameterFilterCutoff,
     AKSamplerParameterFilterStrength,
     AKSamplerParameterFilterResonance,
@@ -23,14 +26,22 @@ typedef NS_ENUM(AUParameterAddress, AKSamplerParameter)
 
     // simple parameters
     AKSamplerParameterAttackDuration,
+    AKSamplerParameterHoldDuration,
     AKSamplerParameterDecayDuration,
     AKSamplerParameterSustainLevel,
+    AKSamplerParameterReleaseHoldDuration,
     AKSamplerParameterReleaseDuration,
     AKSamplerParameterFilterAttackDuration,
     AKSamplerParameterFilterDecayDuration,
     AKSamplerParameterFilterSustainLevel,
     AKSamplerParameterFilterReleaseDuration,
     AKSamplerParameterFilterEnable,
+    AKSamplerParameterRestartVoiceLFO,
+    AKSamplerParameterPitchAttackDuration,
+    AKSamplerParameterPitchDecayDuration,
+    AKSamplerParameterPitchSustainLevel,
+    AKSamplerParameterPitchReleaseDuration,
+    AKSamplerParameterPitchADSRSemitones,
     AKSamplerParameterLoopThruRelease,
     AKSamplerParameterMonophonic,
     AKSamplerParameterLegato,
@@ -53,7 +64,7 @@ void doAKSamplerSetNoteFrequency(AKDSPRef pDSP, int noteNumber, float noteFreque
 void doAKSamplerBuildSimpleKeyMap(AKDSPRef pDSP);
 void doAKSamplerBuildKeyMap(AKDSPRef pDSP);
 void doAKSamplerSetLoopThruRelease(AKDSPRef pDSP, bool value);
-void doAKSamplerPlayNote(AKDSPRef pDSP, UInt8 noteNumber, UInt8 velocity, float noteFrequency);
+void doAKSamplerPlayNote(AKDSPRef pDSP, UInt8 noteNumber, UInt8 velocity);
 void doAKSamplerStopNote(AKDSPRef pDSP, UInt8 noteNumber, bool immediate);
 void doAKSamplerStopAllVoices(AKDSPRef pDSP);
 void doAKSamplerRestartVoices(AKDSPRef pDSP);
@@ -71,9 +82,13 @@ struct AKSamplerDSP : AKDSPBase, AKCoreSampler
     AKLinearParameterRamp masterVolumeRamp;
     AKLinearParameterRamp pitchBendRamp;
     AKLinearParameterRamp vibratoDepthRamp;
+    AKLinearParameterRamp vibratoFrequencyRamp;
+    AKLinearParameterRamp voiceVibratoDepthRamp;
+    AKLinearParameterRamp voiceVibratoFrequencyRamp;
     AKLinearParameterRamp filterCutoffRamp;
     AKLinearParameterRamp filterStrengthRamp;
     AKLinearParameterRamp filterResonanceRamp;
+    AKLinearParameterRamp pitchADSRSemitonesRamp;
     AKLinearParameterRamp glideRateRamp;
     
     AKSamplerDSP();

@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct MIDIFileTrackChunk: AKMIDIFileChunk {
+public struct MIDIFileTrackChunk: AKMIDIFileChunk {
 
     var typeData: [UInt8]
     var lengthData: [UInt8]
@@ -32,7 +32,7 @@ struct MIDIFileTrackChunk: AKMIDIFileChunk {
         self.timeDivision = timeDivision
     }
 
-    var chunkEvents: [AKMIDIFileChunkEvent] {
+    public var chunkEvents: [AKMIDIFileChunkEvent] {
         //FIXME: Not currently handling channel prefix
         var events = [AKMIDIFileChunkEvent]()
         var currentTimeByte: Int?
@@ -72,7 +72,7 @@ struct MIDIFileTrackChunk: AKMIDIFileChunk {
                 if byte == 0xFF { //MetaEvent
                     isParsingMetaEvent = true
                 } else {
-                    if byte < 0x80, let currentRunningStatus = runningStatus,
+                    if byte < 0x80, !isParsingMetaEvent, !isParsingSysex, let currentRunningStatus = runningStatus,
                         let status = AKMIDIStatus(byte: currentRunningStatus) { //Running Status Implied
                         currentTypeByte = currentRunningStatus
                         runningStatus = currentRunningStatus
@@ -106,11 +106,11 @@ struct MIDIFileTrackChunk: AKMIDIFileChunk {
                         } else if let status = AKMIDIStatusType.from(byte: type) {
                             currentLengthByte = MIDIByte(status.length)
                         } else {
-                            AKLog(("bad midi data - could not determine length of event"))
+                            AKLog("bad midi data - could not determine length of event", log: OSLog.midi)
                             return events
                         }
                     } else {
-                        AKLog(("bad midi data - could not determine type"))
+                        AKLog("bad midi data - could not determine type", log: OSLog.midi)
                         return events
                     }
                     if isNotParsingSysex {
@@ -129,15 +129,15 @@ struct MIDIFileTrackChunk: AKMIDIFileChunk {
                     chunkEvent.runningStatus = AKMIDIStatus(byte: running)
                 }
                 if time != chunkEvent.deltaTime {
-                    AKLog("MIDI File Parser time mismatch \(time) vs. \(chunkEvent.deltaTime)")
+                    AKLog("MIDI File Parser time mismatch \(time) vs. \(chunkEvent.deltaTime)", log: OSLog.midi)
                     break
                 }
                 if type != chunkEvent.typeByte {
-                    AKLog("MIDI File Parser type mismatch \(type) vs. \(String(describing: chunkEvent.typeByte))")
+                    AKLog("MIDI File Parser type mismatch \(type) vs. \(String(describing: chunkEvent.typeByte))", log: OSLog.midi)
                     break
                 }
                 if length != chunkEvent.length {
-                    AKLog("MIDI File Parser length mismatch got \(length) expected \(chunkEvent.length) type: \(type)")
+                    AKLog("MIDI File Parser length mismatch got \(length) expected \(chunkEvent.length) type: \(type)", log: OSLog.midi)
                     break
                 }
                 accumulatedDeltaTime += chunkEvent.deltaTime

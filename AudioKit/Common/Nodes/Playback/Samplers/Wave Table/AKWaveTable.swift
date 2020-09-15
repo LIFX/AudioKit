@@ -19,7 +19,7 @@ open class AKWaveTable: AKNode, AKComponent {
 
     public typealias AKAudioUnitType = AKWaveTableAudioUnit
     /// Four letter unique description of the node
-    public static let ComponentDescription = AudioComponentDescription(generator: "smpl")
+    public static let ComponentDescription = AudioComponentDescription(instrument: "smpl")
 
     // MARK: - Properties
 
@@ -79,7 +79,7 @@ open class AKWaveTable: AKNode, AKComponent {
             if internalAU?.isSetUp == true {
                 rateParameter?.value = AUValue(newValue)
             } else {
-                internalAU?.rate = Float(newValue)
+                internalAU?.rate = newValue
             }
         }
     }
@@ -135,7 +135,7 @@ open class AKWaveTable: AKNode, AKComponent {
     }
 
     fileprivate var avAudiofile: AVAudioFile?
-    fileprivate var maximumSamples: Int = 0
+    fileprivate var maximumSamples: Sample = 0
 
     open var loadCompletionHandler: AKCallback = {} {
         willSet {
@@ -155,7 +155,7 @@ open class AKWaveTable: AKNode, AKComponent {
 
     // MARK: - Initialization
 
-    /// Initialize this SamplePlayer node
+    /// Initialize this WaveTable node
     ///
     /// - Parameters:
     ///   - file: Initial file to load (defining maximum size unless maximum samples are also set
@@ -171,7 +171,7 @@ open class AKWaveTable: AKNode, AKComponent {
                       endPoint: Sample = 0,
                       rate: Double = 1,
                       volume: Double = 1,
-                      maximumSamples: Int = 0,
+                      maximumSamples: Sample,
                       completionHandler: @escaping AKCCallback = {},
                       loadCompletionHandler: @escaping AKCCallback = {}) {
 
@@ -179,8 +179,8 @@ open class AKWaveTable: AKNode, AKComponent {
         self.rate = rate
         self.volume = volume
         self.endPoint = endPoint
-        if file != nil {
-            self.avAudiofile = file!
+        if let file = file {
+            self.avAudiofile = file
             self.endPoint = Sample(avAudiofile!.samplesCount)
         }
         self.maximumSamples = maximumSamples
@@ -218,14 +218,14 @@ open class AKWaveTable: AKNode, AKComponent {
         internalAU?.endPoint = Float(self.endPoint)
         internalAU?.loopStartPoint = Float(startPoint)
         internalAU?.loopEndPoint = Float(self.endPoint)
-        internalAU?.rate = Float(rate)
+        internalAU?.rate = rate
         internalAU?.volume = Float(volume)
 
         if maximumSamples != 0 {
             internalAU?.setupAudioFileTable(UInt32(maximumSamples) * 2)
         }
-        if file != nil {
-            load(file: file!)
+        if let file = file {
+            load(file: file)
         }
     }
 
@@ -293,7 +293,7 @@ open class AKWaveTable: AKNode, AKComponent {
             }
             let sizeToUse = UInt32(file.samplesCount * 2)
             if maximumSamples == 0 {
-                maximumSamples = Int(file.samplesCount)
+                maximumSamples = Sample(file.samplesCount)
                 internalAU?.setupAudioFileTable(sizeToUse)
             }
             avAudiofile = file
@@ -309,5 +309,18 @@ open class AKWaveTable: AKNode, AKComponent {
 
     deinit {
         internalAU?.destroy()
+    }
+
+    // Function to start, play, or activate the node at frequency
+    open func play(noteNumber: MIDINoteNumber,
+                   velocity: MIDIVelocity,
+                   frequency: Double,
+                   channel: MIDIChannel = 0) {
+        internalAU?.start()
+    }
+
+    /// Function to stop or bypass the node, both are equivalent
+    open func stop(noteNumber: MIDINoteNumber) {
+        internalAU?.stop()
     }
 }

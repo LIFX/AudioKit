@@ -11,7 +11,6 @@ import Foundation
 /// New sample-accurate version of AKCallbackInstrument
 /// Old AKCallbackInstrument renamed to AKMIDICallbackInstrument
 /// If you have used this before, you should be able to simply switch to AKMIDICallbackInstrument
-
 open class AKCallbackInstrument: AKPolyphonicNode, AKComponent {
 
     public typealias AKAudioUnitType = AKCallbackInstrumentAudioUnit
@@ -47,11 +46,11 @@ open class AKCallbackInstrument: AKPolyphonicNode, AKComponent {
         }
     }
 
-    override open func play(noteNumber: MIDINoteNumber, velocity: MIDIVelocity, channel: MIDIChannel) {
+    open override func play(noteNumber: MIDINoteNumber, velocity: MIDIVelocity, channel: MIDIChannel) {
         internalAU?.startNote(noteNumber, velocity: velocity)
     }
 
-    override open func stop(noteNumber: MIDINoteNumber) {
+    open override func stop(noteNumber: MIDINoteNumber) {
         internalAU?.stopNote(noteNumber)
     }
 

@@ -68,7 +68,7 @@ typedef BOOL(^SimpleRenderBlock)(AudioBufferList *bufferList, AVAudioFrameCount 
                          AVNumberOfChannelsKey:     @(self.defaultFormat.channelCount),
                          AVSampleRateKey:           @(self.defaultFormat.sampleRate)};
         } else {
-            NSMutableDictionary *fixedSettings = AudioKit.format.settings.mutableCopy;
+            NSMutableDictionary *fixedSettings = AKSettings.audioFormat.settings.mutableCopy;
             fixedSettings[AVLinearPCMIsNonInterleaved] = @(false);
             settings = fixedSettings;
         }
@@ -207,7 +207,7 @@ typedef BOOL(^SimpleRenderBlock)(AudioBufferList *bufferList, AVAudioFrameCount 
 
         AudioBufferList *outAudioBufferList = outputData;
 
-        //Ouptut silence using silentBufferList if performing an offline render, or if internalRenderEnabled == false.  pullInput not called.
+        //Output silence using silentBufferList if performing an offline render, or if internalRenderEnabled == false.  pullInput not called.
         BOOL renderDisabled = !*internalRenderEnabled;
         BOOL lockSuccessful = false;
 

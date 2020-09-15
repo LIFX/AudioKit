@@ -20,6 +20,7 @@ extension AudioKit {
     /// - Parameters:
     ///   - node: AKNode to test
     ///   - duration: Number of seconds to test (accurate to the sample)
+    ///   - afterStart: Closure to execute at the beginning of the test
     ///
     @objc public static func test(node: AKNode, duration: Double, afterStart: () -> Void = {}) throws {
         #if swift(>=3.2)
@@ -33,7 +34,7 @@ extension AudioKit {
             let maximumFrameCount: AVAudioFrameCount = 4_096
             try AKTry {
                 engine.reset()
-                try engine.enableManualRenderingMode(.offline, format: format, maximumFrameCount: maximumFrameCount)
+                try engine.enableManualRenderingMode(.offline, format: AKSettings.audioFormat, maximumFrameCount: maximumFrameCount)
                 try engine.start()
             }
 

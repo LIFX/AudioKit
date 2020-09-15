@@ -85,18 +85,16 @@ extension AKMIDI {
     /// - Parameter forUid: unique id for a input
     /// - Returns: name of input or nil
     public func inputName(for inputUid: MIDIUniqueID) -> String? {
-        
+
         let name: String? = zip(inputNames, inputUIDs).first { (arg: (String, MIDIUniqueID)) -> Bool in
                 let (_, uid) = arg
                 return inputUid == uid
-            }.map { (arg) -> String in
+        }.map { (arg) -> String in
                 let (name, _) = arg
                 return name
-            }
+        }
         return name
     }
-
-
 
     /// Look up the unique id for a input index
     ///
@@ -152,14 +150,14 @@ extension AKMIDI {
                             // Note: incomplete sysex packets will not have a status
                             for transformedEvent in transformedMIDIEventList where transformedEvent.status != nil
                                 || transformedEvent.command != nil {
-                                    self.handleMIDIMessage(transformedEvent)
+                                    self.handleMIDIMessage(transformedEvent, fromInput: inputUID)
                             }
                             packetCount += 1
                         }
                     }
 
                     if result != noErr {
-                        AKLog("Error creating MIDI Input Port : \(result)")
+                        AKLog("Error creating MIDI Input Port: \(result)")
                     }
 
                     MIDIPortConnectSource(port, src, nil)
@@ -201,10 +199,10 @@ extension AKMIDI {
     ///
     public func closeInput(uid inputUID: MIDIUniqueID) {
         guard let name = inputName(for: inputUID) else {
-            AKLog("Trying to close midi input \(inputUID), but no name was found")
+            AKLog("Trying to close midi input \(inputUID), but no name was found", log: OSLog.midi)
             return
         }
-        AKLog("Closing MIDI Input '\(name)'")
+        AKLog("Closing MIDI Input '\(name)'", log: OSLog.midi)
         var result = noErr
         for uid in inputPorts.keys {
             if inputUID == 0 || uid == inputUID {
@@ -213,15 +211,15 @@ extension AKMIDI {
                     if result == noErr {
                         endpoints.removeValue(forKey: uid)
                         inputPorts.removeValue(forKey: uid)
-                        AKLog("Disconnected \(name) and removed it from endpoints and input ports")
+                        AKLog("Disconnected \(name) and removed it from endpoints and input ports", log: OSLog.midi)
                     } else {
-                        AKLog("Error disconnecting MIDI port: \(result)")
+                        AKLog("Error disconnecting MIDI port: \(result)", log: OSLog.midi, type: .error)
                     }
                     result = MIDIPortDispose(port)
                     if result == noErr {
-                        AKLog("Disposed \(name)")
+                        AKLog("Disposed \(name)", log: OSLog.midi)
                     } else {
-                        AKLog("Error displosing  MIDI port: \(result)")
+                        AKLog("Error displosing  MIDI port: \(result)", log: OSLog.midi, type: .error)
                     }
                 }
             }
@@ -230,49 +228,65 @@ extension AKMIDI {
 
     /// Close all MIDI Input ports
     public func closeAllInputs() {
-        AKLog("Closing All Inputs")
-        closeInput()
+        AKLog("Closing All Inputs", log: OSLog.midi)
+        for index in 0 ..< MIDISources().endIndex {
+            closeInput(index: index)
+        }
     }
 
-    internal func handleMIDIMessage(_ event: AKMIDIEvent) {
+    internal func handleMIDIMessage(_ event: AKMIDIEvent, fromInput portID: MIDIUniqueID) {
         for listener in listeners {
+            let offset = event.offset
             if let type = event.status?.type {
                 guard let eventChannel = event.channel else {
-                    AKLog("No channel detected in handleMIDIMessage")
+                    AKLog("No channel detected in handleMIDIMessage", log: OSLog.midi)
                     continue
                 }
                 switch type {
                 case .controllerChange:
                     listener.receivedMIDIController(event.data[1],
                                                     value: event.data[2],
-                                                    channel: MIDIChannel(eventChannel))
+                                                    channel: MIDIChannel(eventChannel),
+                                                    portID: portID,
+                                                    offset: offset)
                 case .channelAftertouch:
-                    listener.receivedMIDIAfterTouch(event.data[1],
-                                                    channel: MIDIChannel(eventChannel))
+                    listener.receivedMIDIAftertouch(event.data[1],
+                                                    channel: MIDIChannel(eventChannel),
+                                                    portID: portID,
+                                                    offset: offset)
                 case .noteOn:
                     listener.receivedMIDINoteOn(noteNumber: MIDINoteNumber(event.data[1]),
                                                 velocity: MIDIVelocity(event.data[2]),
-                                                channel: MIDIChannel(eventChannel))
+                                                channel: MIDIChannel(eventChannel),
+                                                portID: portID,
+                                                offset: offset)
                 case .noteOff:
                     listener.receivedMIDINoteOff(noteNumber: MIDINoteNumber(event.data[1]),
                                                  velocity: MIDIVelocity(event.data[2]),
-                                                 channel: MIDIChannel(eventChannel))
+                                                 channel: MIDIChannel(eventChannel),
+                                                 portID: portID,
+                                                 offset: offset)
                 case .pitchWheel:
                     listener.receivedMIDIPitchWheel(event.pitchbendAmount!,
-                                                    channel: MIDIChannel(eventChannel))
+                                                    channel: MIDIChannel(eventChannel),
+                                                    portID: portID,
+                                                    offset: offset)
                 case .polyphonicAftertouch:
                     listener.receivedMIDIAftertouch(noteNumber: MIDINoteNumber(event.data[1]),
                                                     pressure: event.data[2],
-                                                    channel: MIDIChannel(eventChannel))
+                                                    channel: MIDIChannel(eventChannel),
+                                                    portID: portID,
+                                                    offset: offset)
                 case .programChange:
                     listener.receivedMIDIProgramChange(event.data[1],
-                                                       channel: MIDIChannel(eventChannel))
+                                                       channel: MIDIChannel(eventChannel),
+                                                       portID: portID,
+                                                       offset: offset)
                 }
             } else if event.command != nil {
-                //AKLog("Passing [\(event.command?.description ?? "unknown")] to listener \(listener)")
-                listener.receivedMIDISystemCommand(event.data, time: event.timeStamp)
+                listener.receivedMIDISystemCommand(event.data, portID: portID, offset: offset )
             } else {
-                AKLog("No usable status detected in handleMIDIMessage")
+                AKLog("No usable status detected in handleMIDIMessage", log: OSLog.midi)
             }
         }
     }

@@ -10,13 +10,14 @@ import Foundation
 
 public struct AKMIDIFile {
 
+    var filename: String
     var chunks: [AKMIDIFileChunk] = []
 
     var headerChunk: MIDIFileHeaderChunk? {
         return chunks.first(where: { $0.isHeader }) as? MIDIFileHeaderChunk
     }
 
-    var trackChunks: [MIDIFileTrackChunk] {
+    public var trackChunks: [MIDIFileTrackChunk] {
         return Array(chunks.drop(while: { $0.isHeader && $0.isValid })) as? [MIDIFileTrackChunk] ?? []
     }
 
@@ -44,7 +45,7 @@ public struct AKMIDIFile {
     }
 
     public var timeFormat: MIDITimeFormat? {
-        return headerChunk?.timeFormat ?? nil
+        return headerChunk?.timeFormat
     }
 
     public var ticksPerBeat: Int? {
@@ -64,6 +65,7 @@ public struct AKMIDIFile {
     }
 
     public init(url: URL) {
+        filename = url.lastPathComponent
         if let midiData = try? Data(contentsOf: url) {
             let dataSize = midiData.count
             let typeLength = 4
@@ -102,8 +104,10 @@ public struct AKMIDIFile {
                     if sizeIndex == sizeLength {
                         isParsingLength = false
                         sizeIndex = 0
-                        dataLength = MIDIHelper.convertTo32Bit(msb: currentLengthChunk[0], data1: currentLengthChunk[1],
-                                                    data2: currentLengthChunk[2], lsb: currentLengthChunk[3])
+                        dataLength = MIDIHelper.convertTo32Bit(msb: currentLengthChunk[0],
+                                                               data1: currentLengthChunk[1],
+                                                               data2: currentLengthChunk[2],
+                                                               lsb: currentLengthChunk[3])
                     }
                 } else { //get chunk data
                     var tempChunk: AKMIDIFileChunk
@@ -111,10 +115,12 @@ public struct AKMIDIFile {
                     if UInt32(currentDataChunk.count) == dataLength {
                         if isParsingHeader {
                             tempChunk = MIDIFileHeaderChunk(typeData: currentTypeChunk,
-                                                            lengthData: currentLengthChunk, data: currentDataChunk)
+                                                            lengthData: currentLengthChunk,
+                                                            data: currentDataChunk)
                         } else {
                             tempChunk = MIDIFileTrackChunk(typeData: currentTypeChunk,
-                                                           lengthData: currentLengthChunk, data: currentDataChunk)
+                                                           lengthData: currentLengthChunk,
+                                                           data: currentDataChunk)
                         }
                         newChunk = true
                         isParsingHeader = false

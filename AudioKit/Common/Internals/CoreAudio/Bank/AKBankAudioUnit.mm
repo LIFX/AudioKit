@@ -25,6 +25,7 @@
 - (void)setPitchBend:(float)pitchBend { kernelPtr->setPitchBend(pitchBend); }
 - (void)setVibratoDepth:(float)vibratoDepth { kernelPtr->setVibratoDepth(vibratoDepth); }
 - (void)setVibratoRate:(float)vibratoRate { kernelPtr->setVibratoRate(vibratoRate); }
+- (void)setDetuningOffset:(float)detuningOffset { kernelPtr->setDetuningOffset(detuningOffset); }
 
 - (void)stopNote:(uint8_t)note { kernelPtr->stopNote(note); };
 
@@ -113,6 +114,17 @@
                                              flags:0
                                       valueStrings:nil
                                dependentParameters:nil];
+    _detuningOffsetAUParameter =
+    [AUParameterTree createParameterWithIdentifier:@"detuningOffset"
+                                              name:@"Detuning Offset"
+                                           address:AKBankDSPKernel::detuningOffsetAddress
+                                               min:-100
+                                               max:100
+                                              unit:kAudioUnitParameterUnit_Cents
+                                          unitName:nil
+                                             flags:0
+                                      valueStrings:nil
+                               dependentParameters:nil];
     _attackDurationAUParameter.value = 0.1;
     _decayDurationAUParameter.value = 0.1;
     _sustainLevelAUParameter.value = 1.0;
@@ -120,6 +132,7 @@
     _pitchBendAUParameter.value = 0;
     _vibratoDepthAUParameter.value = 0;
     _vibratoRateAUParameter.value = 0;
+    _detuningOffsetAUParameter.value = 0;
 
     kernelPtr->setParameter(AKBankDSPKernel::attackDurationAddress,  _attackDurationAUParameter.value);
     kernelPtr->setParameter(AKBankDSPKernel::decayDurationAddress,   _decayDurationAUParameter.value);
@@ -128,6 +141,7 @@
     kernelPtr->setParameter(AKBankDSPKernel::pitchBendAddress,       _pitchBendAUParameter.value);
     kernelPtr->setParameter(AKBankDSPKernel::vibratoDepthAddress,    _vibratoDepthAUParameter.value);
     kernelPtr->setParameter(AKBankDSPKernel::vibratoRateAddress,     _vibratoRateAUParameter.value);
+    kernelPtr->setParameter(AKBankDSPKernel::detuningOffsetAddress,     _detuningOffsetAUParameter.value);
 
     return @[_attackDurationAUParameter,
              _decayDurationAUParameter,
@@ -135,7 +149,8 @@
              _releaseDurationAUParameter,
              _pitchBendAUParameter,
              _vibratoDepthAUParameter,
-             _vibratoRateAUParameter];
+             _vibratoRateAUParameter,
+             _detuningOffsetAUParameter];
 }
 
 @end

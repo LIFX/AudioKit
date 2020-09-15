@@ -65,6 +65,19 @@ namespace AudioKitCore
             pWaveTable[i] = (float)(amplitude * sin(double(i)/nTableSize * 2.0 * M_PI));
     }
 
+    // A variation of sinusoid() which adds a tiny bit of 2nd harmonic, producing a tone closer to
+    // that of a Hammond organ tonewheel generator.
+    void AudioKitCore::FunctionTable::hammond(float amplitude)
+    {
+        // in case user forgot, init table to default size
+        if (pWaveTable == 0) init();
+
+        for (int i = 0; i < nTableSize; i++)
+            pWaveTable[i] = (float)(amplitude *
+                (sin(double(i) / nTableSize * 2.0 * M_PI) + 0.015f * sin(double(i) / nTableSize * 4.0 * M_PI))
+                );
+    }
+
     void FunctionTable::square(float amplitude, float dutyCycle)
     {
         // in case user forgot, init table to default size
@@ -76,6 +89,15 @@ namespace AudioKitCore
             float phase = (float)i / nTableSize;
             pWaveTable[i] = (phase < dutyCycle ? amplitude : -amplitude) - dcOffset;
         }
+    }
+
+    void FunctionTable::linearCurve(float gain)
+    {
+        // in case user forgot, init table to default size
+        if (pWaveTable == 0) init();
+
+        for (int i = 0; i < nTableSize; i++)
+            pWaveTable[i] = gain * i / float(nTableSize);
     }
     
     // Initialize a FunctionTable to an exponential shape, scaled to fit in the unit square.
@@ -129,5 +151,12 @@ namespace AudioKitCore
         phaseDelta = (float)(frequency / sampleRateHz);
     }
 
+    // Initialize WaveShaper's lookup table to an identity
+    void WaveShaper::init(int tableLength)
+    {
+        waveTable.init(tableLength);
+        for (int i = 0; i < tableLength; i++)
+            waveTable.pWaveTable[i] = i / float(tableLength);
+    }
 }
 

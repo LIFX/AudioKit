@@ -110,10 +110,10 @@ extension AKMIDI {
         let name: String = zip(destinationNames, destinationUIDs).first { (arg: (String, MIDIUniqueID)) -> Bool in
                 let (_, uid) = arg
                 return destUid == uid
-            }.map { (arg) -> String in
+        }.map { (arg) -> String in
                 let (name, _) = arg
                 return name
-            } ?? "Uknown"
+        } ?? "Unknown"
         return name
     }
 
@@ -168,7 +168,7 @@ extension AKMIDI {
     public func openOutput(uid outputUid: MIDIUniqueID) {
         if outputPort == 0 {
             guard let tempPort = MIDIOutputPort(client: client, name: outputPortName) else {
-                AKLog("Unable to create MIDIOutputPort")
+                AKLog("Unable to create MIDIOutputPort", log: OSLog.midi, type: .error)
                 return
             }
             outputPort = tempPort
@@ -186,7 +186,7 @@ extension AKMIDI {
             _ = zip(destinationUIDs, destinations).first { (arg: (MIDIUniqueID, MIDIDestinations.Element)) -> Bool in
                     let (uid, _) = arg
                     return outputUid == uid
-                }.map {
+            }.map {
                     endpoints[$0] = $1
             }
         }
@@ -222,18 +222,18 @@ extension AKMIDI {
     ///
     public func closeOutput(uid outputUid: MIDIUniqueID) {
         let name = destinationName(for: outputUid)
-        AKLog("Closing MIDI Output '\(String(describing: name))'")
+        AKLog("Closing MIDI Output '\(String(describing: name))'", log: OSLog.midi)
         var result = noErr
         if endpoints[outputUid] != nil {
             endpoints.removeValue(forKey: outputUid)
-            AKLog("Disconnected \(name) and removed it from endpoints")
+            AKLog("Disconnected \(name) and removed it from endpoints", log: OSLog.midi)
             if endpoints.count == 0 {
                 // if there are no more endpoints, dispose of midi output port
                 result = MIDIPortDispose(outputPort)
                 if result == noErr {
-                    AKLog("Disposed MIDI Output port")
+                    AKLog("Disposed MIDI Output port", log: OSLog.midi)
                 } else {
-                    AKLog("Error disposing  MIDI Output port: \(result)")
+                    AKLog("Error disposing  MIDI Output port: \(result)", log: OSLog.midi, type: .error)
                 }
                 outputPort = 0
             }
@@ -241,7 +241,7 @@ extension AKMIDI {
     }
 
     /// Send Message with data
-    public func sendMessage(_ data: [MIDIByte]) {
+    public func sendMessage(_ data: [MIDIByte], offset: MIDITimeStamp = 0) {
 
         // Create a buffer that is big enough to hold the data to be sent and
         // all the necessary headers.
@@ -250,7 +250,7 @@ extension AKMIDI {
         // the discussion section of MIDIPacketListAdd states that "The maximum
         // size of a packet list is 65536 bytes." Checking for that limit here.
         if bufferSize > 65_536 {
-            AKLog("error sending midi : data array is too large, requires a buffer larger than 65536")
+            AKLog("error sending midi : data array is too large, requires a buffer larger than 65536", log: OSLog.midi, type: .error)
             return
         }
 
@@ -261,25 +261,25 @@ extension AKMIDI {
         // explicit alloc and dealloc.
         buffer.withUnsafeMutableBytes { (ptr: UnsafeMutableRawBufferPointer) -> Void in
             if let packetListPointer = ptr.bindMemory(to: MIDIPacketList.self).baseAddress {
-                
+
                 let packet = MIDIPacketListInit(packetListPointer)
                 let nextPacket: UnsafeMutablePointer<MIDIPacket>? =
-                    MIDIPacketListAdd(packetListPointer, bufferSize, packet, 0, data.count, data)
-                
+                    MIDIPacketListAdd(packetListPointer, bufferSize, packet, offset, data.count, data)
+
                 // I would prefer stronger error handling here, perhaps throwing
                 // to force the app developer to handle the error.
                 if nextPacket == nil {
-                    AKLog("error sending midi : Failed to add packet to packet list.")
+                    AKLog("error sending midi: Failed to add packet to packet list.", log: OSLog.midi, type: .error)
                     return
                 }
-                
+
                 for endpoint in endpoints.values {
                     let result = MIDISend(outputPort, endpoint, packetListPointer)
                     if result != noErr {
-                        AKLog("error sending midi : \(result)")
+                        AKLog("error sending midi: \(result)", log: OSLog.midi, type: .error)
                     }
                 }
-                
+
                 if virtualOutput != 0 {
                     MIDIReceived(virtualOutput, packetListPointer)
                 }
@@ -336,9 +336,8 @@ extension AKMIDI {
         self.sendMessage(message)
     }
 
-    // MARK: -
     // MARK: - Expand api to include MIDITimeStamp
-    // MARK: -
+
     // MARK: - Send a message with MIDITimeStamp
     public func sendNoteOnMessageWithTime(noteNumber: MIDINoteNumber,
                                           velocity: MIDIVelocity,
@@ -369,7 +368,7 @@ extension AKMIDI {
         for endpoint in endpoints.values {
             let result = MIDISend(outputPort, endpoint, packetListPointer)
             if result != noErr {
-                AKLog("error sending midi : \(result)")
+                AKLog("error sending midi: \(result)", log: OSLog.midi, type: .error)
             }
         }
 

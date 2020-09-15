@@ -11,6 +11,7 @@
 
 extern "C" {
 #include "soundpipe.h"
+#include "soundpipeextension.h"
 }
 
 #import "AKDSPKernel.hpp"
@@ -19,14 +20,6 @@ class AKSoundpipeKernel: public AKDSPKernel {
 protected:
     sp_data *sp = nullptr;
 public:
-    //    AKSoundpipeKernel(int channelCount, float sampleRate):
-    //        AKDSPKernel(channelCount, sampleRate) {
-    //
-    //      sp_create(&sp);
-    //      sp->sr = sampleRate;
-    //      sp->nchan = channelCount;
-    //    }
-
     sp_data *getSpData() { return sp; }
 
     // The default constructor should be deleted,
@@ -50,7 +43,6 @@ public:
     }
 
     ~AKSoundpipeKernel() {
-        //printf("~AKSoundpipeKernel(), &sp is %p\n", (void *)sp);
         // releasing the memory in the destructor only
         sp_destroy(&sp);
     }

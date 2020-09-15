@@ -109,6 +109,8 @@ open class AKDiskStreamer: AKNode, AKComponent {
         }
     }
 
+    open var loadedFile: AKAudioFile?
+
     // MARK: - Initialization
 
     /// Initialize this SamplePlayer node
@@ -138,8 +140,8 @@ open class AKDiskStreamer: AKNode, AKComponent {
             strongSelf.avAudioUnit = avAudioUnit
             strongSelf.avAudioNode = avAudioUnit
             strongSelf.internalAU = avAudioUnit.auAudioUnit as? AKAudioUnitType
-            strongSelf.internalAU!.completionHandler = completionHandler
-            strongSelf.internalAU!.loadCompletionHandler = loadCompletionHandler
+            strongSelf.internalAU?.completionHandler = completionHandler
+            strongSelf.internalAU?.loadCompletionHandler = loadCompletionHandler
         }
 
         guard let tree = internalAU?.parameterTree else {
@@ -191,6 +193,7 @@ open class AKDiskStreamer: AKNode, AKComponent {
         internalAU?.loopStartPoint = Float(safeSample(startPoint))
         internalAU?.loopEndPoint = Float(safeSample(endPoint))
         internalAU?.loadFile(file.avAsset.url.path)
+        loadedFile = file
     }
 
     open func rewind() {

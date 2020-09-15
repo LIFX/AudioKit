@@ -20,14 +20,19 @@
     fileprivate var masterVolumeParameter: AUParameter?
     fileprivate var pitchBendParameter: AUParameter?
     fileprivate var vibratoDepthParameter: AUParameter?
+    fileprivate var vibratoFrequencyParameter: AUParameter?
+    fileprivate var voiceVibratoDepthParameter: AUParameter?
+    fileprivate var voiceVibratoFrequencyParameter: AUParameter?
     fileprivate var filterCutoffParameter: AUParameter?
     fileprivate var filterStrengthParameter: AUParameter?
     fileprivate var filterResonanceParameter: AUParameter?
     fileprivate var glideRateParameter: AUParameter?
 
     fileprivate var attackDurationParameter: AUParameter?
+    fileprivate var holdDurationParameter: AUParameter?
     fileprivate var decayDurationParameter: AUParameter?
     fileprivate var sustainLevelParameter: AUParameter?
+    fileprivate var releaseHoldDurationParameter: AUParameter?
     fileprivate var releaseDurationParameter: AUParameter?
 
     fileprivate var filterAttackDurationParameter: AUParameter?
@@ -35,7 +40,14 @@
     fileprivate var filterSustainLevelParameter: AUParameter?
     fileprivate var filterReleaseDurationParameter: AUParameter?
 
+    fileprivate var pitchAttackDurationParameter: AUParameter?
+    fileprivate var pitchDecayDurationParameter: AUParameter?
+    fileprivate var pitchSustainLevelParameter: AUParameter?
+    fileprivate var pitchReleaseDurationParameter: AUParameter?
+    fileprivate var pitchADSRSemitonesParameter: AUParameter?
+
     fileprivate var filterEnableParameter: AUParameter?
+    fileprivate var restartVoiceLFOParameter: AUParameter?
     fileprivate var loopThruReleaseParameter: AUParameter?
     fileprivate var monophonicParameter: AUParameter?
     fileprivate var legatoParameter: AUParameter?
@@ -78,7 +90,7 @@
     }
 
     /// Vibrato amount (semitones)
-    @objc open dynamic var vibratoDepth: Double = 1.0 {
+    @objc open dynamic var vibratoDepth: Double = 0.0 {
         willSet {
             guard vibratoDepth != newValue else { return }
 
@@ -88,6 +100,48 @@
             }
 
             internalAU?.vibratoDepth = newValue
+        }
+    }
+
+    /// Vibrato speed (hz)
+    @objc open dynamic var vibratoFrequency: Double = 5.0 {
+        willSet {
+            guard vibratoFrequency != newValue else { return }
+
+            if internalAU?.isSetUp == true {
+                vibratoFrequencyParameter?.value = AUValue(newValue)
+                return
+            }
+
+            internalAU?.vibratoFrequency = newValue
+        }
+    }
+
+    /// Voice Vibrato amount (semitones) - each voice behaves indpendently
+    @objc open dynamic var voiceVibratoDepth: Double = 0.0 {
+        willSet {
+            guard voiceVibratoDepth != newValue else { return }
+
+            if internalAU?.isSetUp == true {
+                voiceVibratoDepthParameter?.value = AUValue(newValue)
+                return
+            }
+
+            internalAU?.voiceVibratoDepth = newValue
+        }
+    }
+
+    /// Vibrato speed (hz)
+    @objc open dynamic var voiceVibratoFrequency: Double = 5.0 {
+        willSet {
+            guard voiceVibratoFrequency != newValue else { return }
+
+            if internalAU?.isSetUp == true {
+                voiceVibratoFrequencyParameter?.value = AUValue(newValue)
+                return
+            }
+
+            internalAU?.voiceVibratoFrequency = newValue
         }
     }
 
@@ -155,6 +209,14 @@
         }
     }
 
+    /// Amplitude hold duration (seconds)
+    @objc open dynamic var holdDuration: Double = 0.0 {
+        willSet {
+            guard holdDuration != newValue else { return }
+            internalAU?.holdDuration = newValue
+        }
+    }
+
     /// Amplitude Decay duration (seconds)
     @objc open dynamic var decayDuration: Double = 0.0 {
         willSet {
@@ -168,6 +230,14 @@
         willSet {
             guard sustainLevel != newValue else { return }
             internalAU?.sustainLevel = newValue
+        }
+    }
+
+    /// Amplitude Release Hold duration (seconds)
+    @objc open dynamic var releaseHoldDuration: Double = 0.0 {
+        willSet {
+            guard releaseHoldDuration != newValue else { return }
+            internalAU?.releaseHoldDuration = newValue
         }
     }
 
@@ -208,6 +278,54 @@
         willSet {
             guard filterReleaseDuration != newValue else { return }
             internalAU?.filterReleaseDuration = newValue
+        }
+    }
+
+    /// Pitch attack duration (seconds)
+    @objc open dynamic var pitchAttackDuration: Double = 0.0 {
+        willSet {
+            guard pitchAttackDuration != newValue else { return }
+            internalAU?.pitchAttackDuration = newValue
+        }
+    }
+
+    /// Pitch Decay duration (seconds)
+    @objc open dynamic var pitchDecayDuration: Double = 0.0 {
+        willSet {
+            guard pitchDecayDuration != newValue else { return }
+            internalAU?.pitchDecayDuration = newValue
+        }
+    }
+
+    /// Pitch sustain level (fraction)
+    @objc open dynamic var pitchSustainLevel: Double = 1.0 {
+        willSet {
+            guard pitchSustainLevel != newValue else { return }
+            internalAU?.pitchSustainLevel = newValue
+        }
+    }
+
+    /// Pitch Release duration (seconds)
+    @objc open dynamic var pitchReleaseDuration: Double = 0.0 {
+        willSet {
+            guard pitchReleaseDuration != newValue else { return }
+            internalAU?.pitchReleaseDuration = newValue
+        }
+    }
+
+    /// Pitch EG Amount duration (semitones)
+    @objc open dynamic var pitchADSRSemitones: Double = 0.0 {
+        willSet {
+            guard pitchADSRSemitones != newValue else { return }
+            internalAU?.pitchADSRSemitones = newValue
+        }
+    }
+
+    /// Voice LFO restart (boolean, 0.0 for false or 1.0 for true) - resets the phase of each voice lfo on keydown
+    @objc open dynamic var restartVoiceLFO: Bool = false {
+        willSet {
+            guard restartVoiceLFO != newValue else { return }
+            internalAU?.restartVoiceLFO = newValue ? 1.0 : 0.0
         }
     }
 
@@ -267,18 +385,29 @@
     ///   - masterVolume: 0.0 - 1.0
     ///   - pitchBend: semitones, signed
     ///   - vibratoDepth: semitones, typically less than 1.0
+    ///   - vibratoFrequency: hertz
+    ///   - voiceVibratoDepth: semitones, typically less than 1.0
+    ///   - voiceVibratoFrequency: hertz
     ///   - filterCutoff: relative to sample playback pitch, 1.0 = fundamental, 2.0 = 2nd harmonic etc
     ///   - filterStrength: same units as filterCutoff; amount filter EG adds to filterCutoff
     ///   - filterResonance: dB, -20.0 - 20.0
     ///   - attackDuration: seconds, 0.0 - 10.0
+    ///   - holdDuration: seconds, 0.0 - 10.0
     ///   - decayDuration: seconds, 0.0 - 10.0
     ///   - sustainLevel: 0.0 - 1.0
+    ///   - releaseHoldDuration: seconds, 0.0 - 10.0
     ///   - releaseDuration: seconds, 0.0 - 10.0
+    ///   - restartVoiceLFO: true to reset each voice vibrato lfo on noteOn
     ///   - filterEnable: true to enable per-voice filters
     ///   - filterAttackDuration: seconds, 0.0 - 10.0
     ///   - filterDecayDuration: seconds, 0.0 - 10.0
     ///   - filterSustainLevel: 0.0 - 1.0
     ///   - filterReleaseDuration: seconds, 0.0 - 10.0
+    ///   - pitchAttackDuration: seconds, 0.0 - 10.0
+    ///   - pitchDecayDuration: seconds, 0.0 - 10.0
+    ///   - pitchSustainLevel: 0.0 - 1.0
+    ///   - pitchReleaseDuration: seconds, 0.0 - 10.0
+    ///   - pitchADSRSemitones: semitones, -100.0 - 100.0   
     ///   - glideRate: seconds/octave, 0.0 - 10.0
     ///   - loopThruRelease: if true, sample will continue looping after key release
     ///   - isMonophonic: true for mono, false for polyphonic
@@ -290,18 +419,29 @@
         masterVolume: Double = 1.0,
         pitchBend: Double = 0.0,
         vibratoDepth: Double = 0.0,
+        vibratoFrequency: Double = 5.0,
+        voiceVibratoDepth: Double = 0.0,
+        voiceVibratoFrequency: Double = 5.0,
         filterCutoff: Double = 4.0,
         filterStrength: Double = 20.0,
         filterResonance: Double = 0.0,
         attackDuration: Double = 0.0,
+        holdDuration: Double = 0.0,
         decayDuration: Double = 0.0,
         sustainLevel: Double = 1.0,
+        releaseHoldDuration: Double = 0.0,
         releaseDuration: Double = 0.0,
+        restartVoiceLFO: Bool = false,
         filterEnable: Bool = false,
         filterAttackDuration: Double = 0.0,
         filterDecayDuration: Double = 0.0,
         filterSustainLevel: Double = 1.0,
         filterReleaseDuration: Double = 0.0,
+        pitchAttackDuration: Double = 0.0,
+        pitchDecayDuration: Double = 0.0,
+        pitchSustainLevel: Double = 0.0,
+        pitchReleaseDuration: Double = 0.0,
+        pitchADSRSemitones: Double = 0.0,
         glideRate: Double = 0.0,
         loopThruRelease: Bool = true,
         isMonophonic: Bool = false,
@@ -312,18 +452,29 @@
         self.masterVolume = masterVolume
         self.pitchBend = pitchBend
         self.vibratoDepth = vibratoDepth
+        self.vibratoFrequency = vibratoFrequency
+        self.voiceVibratoDepth = voiceVibratoDepth
+        self.voiceVibratoFrequency = voiceVibratoFrequency
         self.filterCutoff = filterCutoff
         self.filterStrength = filterStrength
         self.filterResonance = filterResonance
         self.attackDuration = attackDuration
+        self.holdDuration = holdDuration
         self.decayDuration = decayDuration
         self.sustainLevel = sustainLevel
+        self.releaseHoldDuration = releaseHoldDuration
         self.releaseDuration = releaseDuration
+        self.restartVoiceLFO = restartVoiceLFO
         self.filterEnable = filterEnable
         self.filterAttackDuration = filterAttackDuration
         self.filterDecayDuration = filterDecayDuration
         self.filterSustainLevel = filterSustainLevel
         self.filterReleaseDuration = filterReleaseDuration
+        self.pitchAttackDuration = pitchAttackDuration
+        self.pitchDecayDuration = pitchDecayDuration
+        self.pitchSustainLevel = pitchSustainLevel
+        self.pitchReleaseDuration = pitchReleaseDuration
+        self.pitchADSRSemitones = pitchADSRSemitones
         self.glideRate = glideRate
         self.loopThruRelease = loopThruRelease
         self.isMonophonic = isMonophonic
@@ -353,18 +504,29 @@
         self.masterVolumeParameter = tree["masterVolume"]
         self.pitchBendParameter = tree["pitchBend"]
         self.vibratoDepthParameter = tree["vibratoDepth"]
+        self.vibratoFrequencyParameter = tree["vibratoFrequency"]
+        self.voiceVibratoDepthParameter = tree["voiceVibratoDepth"]
+        self.voiceVibratoFrequencyParameter = tree["voiceVibratoFrequency"]
         self.filterCutoffParameter = tree["filterCutoff"]
         self.filterStrengthParameter = tree["filterStrength"]
         self.filterResonanceParameter = tree["filterResonance"]
         self.attackDurationParameter = tree["attackDuration"]
+        self.holdDurationParameter = tree["holdDuration"]
         self.decayDurationParameter = tree["decayDuration"]
         self.sustainLevelParameter = tree["sustainLevel"]
+        self.releaseHoldDurationParameter = tree["releaseHoldDuration"]
         self.releaseDurationParameter = tree["releaseDuration"]
         self.filterAttackDurationParameter = tree["filterAttackDuration"]
         self.filterDecayDurationParameter = tree["filterDecayDuration"]
         self.filterSustainLevelParameter = tree["filterSustainLevel"]
         self.filterReleaseDurationParameter = tree["filterReleaseDuration"]
+        self.restartVoiceLFOParameter = tree["restartVoiceLFO"]
         self.filterEnableParameter = tree["filterEnable"]
+        self.pitchAttackDurationParameter = tree["pitchAttackDuration"]
+        self.pitchDecayDurationParameter = tree["pitchDecayDuration"]
+        self.pitchSustainLevelParameter = tree["pitchSustainLevel"]
+        self.pitchReleaseDurationParameter = tree["pitchReleaseDuration"]
+        self.pitchADSRSemitonesParameter = tree["pitchADSRSemitones"]
         self.glideRateParameter = tree["glideRate"]
         self.loopThruReleaseParameter = tree["loopThruRelease"]
         self.monophonicParameter = tree["monophonic"]
@@ -375,18 +537,29 @@
         self.internalAU?.setParameterImmediately(.masterVolume, value: masterVolume)
         self.internalAU?.setParameterImmediately(.pitchBend, value: pitchBend)
         self.internalAU?.setParameterImmediately(.vibratoDepth, value: vibratoDepth)
+        self.internalAU?.setParameterImmediately(.vibratoFrequency, value: vibratoFrequency)
+        self.internalAU?.setParameterImmediately(.voiceVibratoDepth, value: voiceVibratoDepth)
+        self.internalAU?.setParameterImmediately(.voiceVibratoFrequency, value: voiceVibratoFrequency)
         self.internalAU?.setParameterImmediately(.filterCutoff, value: filterCutoff)
         self.internalAU?.setParameterImmediately(.filterStrength, value: filterStrength)
         self.internalAU?.setParameterImmediately(.filterResonance, value: filterResonance)
         self.internalAU?.setParameterImmediately(.attackDuration, value: attackDuration)
+        self.internalAU?.setParameterImmediately(.holdDuration, value: holdDuration)
         self.internalAU?.setParameterImmediately(.decayDuration, value: decayDuration)
         self.internalAU?.setParameterImmediately(.sustainLevel, value: sustainLevel)
+        self.internalAU?.setParameterImmediately(.releaseHoldDuration, value: releaseHoldDuration)
         self.internalAU?.setParameterImmediately(.releaseDuration, value: releaseDuration)
         self.internalAU?.setParameterImmediately(.filterAttackDuration, value: filterAttackDuration)
         self.internalAU?.setParameterImmediately(.filterDecayDuration, value: filterDecayDuration)
         self.internalAU?.setParameterImmediately(.filterSustainLevel, value: filterSustainLevel)
         self.internalAU?.setParameterImmediately(.filterReleaseDuration, value: filterReleaseDuration)
         self.internalAU?.setParameterImmediately(.filterEnable, value: filterEnable ? 1.0 : 0.0)
+        self.internalAU?.setParameterImmediately(.restartVoiceLFO, value: restartVoiceLFO ? 1.0 : 0.0)
+        self.internalAU?.setParameterImmediately(.pitchAttackDuration, value: pitchAttackDuration)
+        self.internalAU?.setParameterImmediately(.pitchDecayDuration, value: pitchDecayDuration)
+        self.internalAU?.setParameterImmediately(.pitchSustainLevel, value: pitchSustainLevel)
+        self.internalAU?.setParameterImmediately(.pitchReleaseDuration, value: pitchReleaseDuration)
+        self.internalAU?.setParameterImmediately(.pitchADSRSemitones, value: pitchADSRSemitones)
         self.internalAU?.setParameterImmediately(.glideRate, value: glideRate)
         self.internalAU?.setParameterImmediately(.loopThruRelease, value: loopThruRelease ? 1.0 : 0.0)
         self.internalAU?.setParameterImmediately(.monophonic, value: isMonophonic ? 1.0 : 0.0)
@@ -447,9 +620,8 @@
 
     @objc open override func play(noteNumber: MIDINoteNumber,
                                   velocity: MIDIVelocity,
-                                  frequency: Double,
                                   channel: MIDIChannel = 0) {
-        internalAU?.playNote(noteNumber: noteNumber, velocity: velocity, noteFrequency: Float(frequency))
+        internalAU?.playNote(noteNumber: noteNumber, velocity: velocity)
     }
 
     @objc open override func stop(noteNumber: MIDINoteNumber) {

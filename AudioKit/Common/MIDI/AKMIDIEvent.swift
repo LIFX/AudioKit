@@ -19,8 +19,8 @@ public struct AKMIDIEvent: AKMIDIMessage {
     /// Position data - used for events parsed from a MIDI file
     public var positionInBeats: Double?
 
-    //Timestamp - offset within a packet. Used mostly in receiving packets live
-    public var timeStamp: MIDITimeStamp = 0
+    //Offset - offset within a packet. Used mostly in receiving packets live
+    public var offset: MIDITimeStamp = 0
 
     /// Description
     public var description: String {
@@ -36,6 +36,8 @@ public struct AKMIDIEvent: AKMIDIMessage {
         return "Unhandled event \(data)"
     }
 
+    #if swift(>=5.2)
+    // This method CRASHES the LLVM compiler with Swift version 5.1 and "Build Libraries for Distribution" turned on
     /// Internal MIDIByte-sized packets - in development / not used yet
     public var internalPackets: [[MIDIByte]] {
         var splitData = [[MIDIByte]]()
@@ -48,7 +50,8 @@ public struct AKMIDIEvent: AKMIDIMessage {
         }
         return splitData
     }
-
+    #endif
+    
     /// The length in bytes for this MIDI message (1 to 3 bytes)
     public var length: Int {
         return data.count
@@ -66,7 +69,7 @@ public struct AKMIDIEvent: AKMIDIMessage {
     public var command: AKMIDISystemCommand? {
         //FIXME: Improve this if statement to catch valid system reset commands (0xFF)
         // but ignore meta events (0xFF, 0x..., 0x..., etc)
-        if let statusByte = data.first, (statusByte != AKMIDISystemCommand.sysReset.rawValue && data.count > 1) {
+        if let statusByte = data.first, (statusByte != AKMIDISystemCommand.sysReset.rawValue) {
             return AKMIDISystemCommand(rawValue: statusByte)
         }
         return nil
@@ -102,7 +105,7 @@ public struct AKMIDIEvent: AKMIDIMessage {
     /// - parameter packet: MIDIPacket that is potentially a known event type
     ///
     public init(packet: MIDIPacket) {
-        timeStamp = packet.timeStamp
+        offset = packet.timeStamp
 
         // MARK: we currently assume this is one midi event could be any number of events
         let isSystemCommand = packet.isSystemCommand
@@ -148,14 +151,14 @@ public struct AKMIDIEvent: AKMIDIMessage {
         }
 
     }
-    
+
     /// Initialize the MIDI Event from a raw MIDIByte packet (ie. from Bluetooth)
     ///
     /// - Parameters:
     ///   - data:  [MIDIByte] bluetooth packet
     ///
-    public init(data: [MIDIByte], time: MIDITimeStamp = 0) {
-        timeStamp = time
+    public init(data: [MIDIByte], offset: MIDITimeStamp = 0) {
+        self.offset = offset
         if AudioKit.midi.isReceivingSysex {
             if let sysexEndIndex = data.firstIndex(of: AKMIDISystemCommand.sysexEnd.rawValue) {
                 self.data = Array(data[0...sysexEndIndex])
@@ -175,7 +178,7 @@ public struct AKMIDIEvent: AKMIDIMessage {
             let channel = data[0].lowBit
             fillData(status: status, channel: channel, bytes: Array(data.dropFirst()))
         } else if let metaType = AKMIDIMetaEventType(rawValue: data[0]) {
-            print("is meta event \(metaType.description)")
+            AKLog("is meta event \(metaType.description)", log: OSLog.midi)
         }
     }
 
@@ -196,7 +199,7 @@ public struct AKMIDIEvent: AKMIDIMessage {
                                        channel: MIDIChannel,
                                        bytes: [MIDIByte]) {
         data = []
-        data.append(AKMIDIStatus.init(type: status, channel: channel).byte)
+        data.append(AKMIDIStatus(type: status, channel: channel).byte)
         for byte in bytes {
             data.append(byte.lower7bits())
         }
@@ -288,7 +291,7 @@ public struct AKMIDIEvent: AKMIDIMessage {
         if let midiBytes = AKMIDIEvent.decode(packet: packet) {
             AudioKit.midi.incomingSysex += midiBytes
             if midiBytes.contains(AKMIDISystemCommand.sysexEnd.rawValue) {
-                let sysexEvent = AKMIDIEvent(data: AudioKit.midi.incomingSysex, time: packet.timeStamp)
+                let sysexEvent = AKMIDIEvent(data: AudioKit.midi.incomingSysex, offset: packet.timeStamp)
                 AudioKit.midi.stopReceivingSysex()
                 return sysexEvent
             }

@@ -54,7 +54,7 @@ import AudioKit
         }
     }
     public var callback: (Double) -> Void = {val in
-        AKLog(val)
+        AKLog("Course fine slider: \(val)")
     }
     public func reset(to value: Double) {
         setStable(value: value)
@@ -93,41 +93,68 @@ import AudioKit
                           color: AKStylist.sharedInstance.nextColor,
                           frame: frame,
                           callback: { _ in })
-        coarseStepper.callback = { value in
-            self.callback(value)
-            self.currentValue = value
-            self.fineStepper.currentValue = value
-            self.slider.value = value
+        coarseStepper.callback = { [weak self] value in
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.callback(value)
+            strongSelf.currentValue = value
+            strongSelf.fineStepper.currentValue = value
+            strongSelf.slider.value = value
         }
-        coarseStepper.touchBeganCallback = {
-            self.touchBeganCallback()
+        coarseStepper.touchBeganCallback = { [weak self] in
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.touchBeganCallback()
         }
-        coarseStepper.touchEndedCallback = {
-            self.touchEndedCallback()
+        coarseStepper.touchEndedCallback = { [weak self] in
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.touchEndedCallback()
         }
-        fineStepper.callback = { value in
-            self.callback(value)
-            self.currentValue = value
-            self.coarseStepper.currentValue = value
-            self.slider.value = value
+        fineStepper.callback = { [weak self] value in
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.callback(value)
+            strongSelf.currentValue = value
+            strongSelf.coarseStepper.currentValue = value
+            strongSelf.slider.value = value
         }
-        fineStepper.touchBeganCallback = {
-            self.touchBeganCallback()
+        fineStepper.touchBeganCallback = { [weak self] in
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.touchBeganCallback()
         }
-        fineStepper.touchEndedCallback = {
-            self.touchEndedCallback()
+        fineStepper.touchEndedCallback = { [weak self] in
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.touchEndedCallback()
         }
-        slider.callback = { value in
-            self.callback(value)
-            self.currentValue = value
-            self.coarseStepper.currentValue = value
-            self.fineStepper.currentValue = value
+        slider.callback = { [weak self] value in
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.callback(value)
+            strongSelf.currentValue = value
+            strongSelf.coarseStepper.currentValue = value
+            strongSelf.fineStepper.currentValue = value
         }
-        slider.touchBeganCallback = {
-            self.touchBeganCallback()
+        slider.touchBeganCallback = { [weak self] in
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.touchBeganCallback()
         }
-        slider.touchEndedCallback = {
-            self.touchEndedCallback()
+        slider.touchEndedCallback = { [weak self] in
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.touchEndedCallback()
         }
         coarseStepper.backgroundColor = .clear
         fineStepper.backgroundColor = .clear
@@ -165,11 +192,11 @@ import AudioKit
         nameLabel.font = titleFont
         valueLabel.font = valueFont
     }
-    required public init?(coder aDecoder: NSCoder) {
+    public required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         genSubViews()
     }
-    override open func draw(_ rect: CGRect) {
+    open override func draw(_ rect: CGRect) {
         super.draw(rect)
         genStackViews(rect: rect)
     }
@@ -204,21 +231,21 @@ import AudioKit
         buttons.layoutSubviews()
     }
     internal func addToStackIfPossible(view: UIView?, stack: UIStackView) {
-        if view != nil {
-            stack.addArrangedSubview(view!)
+        if let view = view {
+            stack.addArrangedSubview(view)
         }
     }
     /// Require constraint-based layout
     open class override var requiresConstraintBasedLayout: Bool {
         return true
     }
-    override open func prepareForInterfaceBuilder() {
+    open override func prepareForInterfaceBuilder() {
         super.prepareForInterfaceBuilder()
         clipsToBounds = true
     }
     open var touchBeganCallback: () -> Void = { }
     open var touchEndedCallback: () -> Void = { }
-    override open func layoutSubviews() {
+    open override func layoutSubviews() {
         super.layoutSubviews()
         genStackViews(rect: bounds)
     }

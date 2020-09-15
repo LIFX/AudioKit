@@ -6,11 +6,11 @@
 //  Copyright © 2018 AudioKit. All rights reserved.
 //
 
+/// Functions specific to buffering audio
 extension AKPlayer {
     // Fills the buffer with data read from audioFile
     internal func updateBuffer(force: Bool = false) {
-        if isNotBuffered { return }
-        guard let audioFile = audioFile else { return }
+        guard isBuffered, let audioFile = audioFile else { return }
 
         let fileFormat = audioFile.fileFormat
         let processingFormat = audioFile.processingFormat
@@ -32,16 +32,16 @@ extension AKPlayer {
             startFrame != startingFrame ||
             endFrame != endingFrame
 
-        if loop.needsUpdate && isLooping {
+        if loop.needsUpdate, isLooping {
             updateNeeded = true
         }
 
-        if fade.needsUpdate && isFaded {
+        if fade.needsUpdate, isFaded {
             updateNeeded = true
         }
 
         if !updateNeeded {
-            // AKLog("No buffer update needed")
+            AKLog("No buffer update needed")
             return
         }
 
@@ -88,7 +88,7 @@ extension AKPlayer {
             reverseBuffer()
         }
 
-        if isFaded {
+        if isFaded, isBufferFaded {
             fadeBuffer(inTime: fade.inTime, outTime: fade.outTime)
             fade.needsUpdate = false
         }
@@ -96,8 +96,6 @@ extension AKPlayer {
         // these are only stored to check if the buffer needs to be updated in subsequent fills
         startingFrame = startFrame
         endingFrame = endFrame
-
-        // AKLog("Filled buffer from \(startTime) to \(endTime)")
     }
 
     // Read the buffer in backwards
@@ -105,7 +103,6 @@ extension AKPlayer {
         guard isBuffered, let buffer = self.buffer else { return }
         if let reversedBuffer = buffer.reverse() {
             self.buffer = reversedBuffer
-            // AKLog("Reversed Buffer")
         }
     }
 
@@ -113,7 +110,6 @@ extension AKPlayer {
         guard isBuffered, let buffer = self.buffer else { return }
         if let normalizedBuffer = buffer.normalize() {
             self.buffer = normalizedBuffer
-            // AKLog("Normalized Buffer")
         }
     }
 
@@ -124,11 +120,8 @@ extension AKPlayer {
     fileprivate func fadeBuffer(inTime: Double = 0, outTime: Double = 0) {
         guard isBuffered, let buffer = self.buffer else { return }
         if let fadedBuffer = buffer.fade(inTime: inTime,
-                                         outTime: outTime,
-                                         inRampType: fade.inRampType,
-                                         outRampType: fade.outRampType) {
+                                         outTime: outTime) {
             self.buffer = fadedBuffer
-            // AKLog("Faded Buffer")
         }
     }
 }

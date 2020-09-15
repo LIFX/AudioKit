@@ -8,6 +8,7 @@
 
 /// This is primarily for the telephone page in the Synthesis playground
 open class AKTelephoneView: UIView {
+    //swiftlint:disable
 
     var keyRects = [String: CGRect]()
     var keyStarRect = CGRect.zero
@@ -20,7 +21,7 @@ open class AKTelephoneView: UIView {
     var callback: (String, String) -> Void
 
     /// Handle new touches
-    override open func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+    open override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let touch = touches.first {
             let touchLocation = touch.location(in: self)
 
@@ -46,7 +47,7 @@ open class AKTelephoneView: UIView {
     }
 
     /// Handle new touches
-    override open func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+    open override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         if currentKey != "" {
             callback(currentKey, "up")
             currentKey = ""
@@ -62,7 +63,7 @@ open class AKTelephoneView: UIView {
     }
 
     /// Initialize within Interface Builder
-    required public init?(coder aDecoder: NSCoder) {
+    public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
@@ -76,7 +77,7 @@ open class AKTelephoneView: UIView {
     }
 
     /// Draw the telephone view
-    override open func draw(_ rect: CGRect) {
+    open override func draw(_ rect: CGRect) {
         //// General Declarations
         let context = UIGraphicsGetCurrentContext()
 

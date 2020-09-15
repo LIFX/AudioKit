@@ -61,7 +61,7 @@ extension AudioKit {
 
         let dummy = AVAudioUnitSampler()
         engine.attach(dummy)
-        engine.connect(dummy, to: mixer, format: AudioKit.format)
+        engine.connect(dummy, to: mixer, format: AKSettings.audioFormat)
         return dummy
     }
 
@@ -99,23 +99,29 @@ extension AudioKit {
     //Convenience
     @objc public static func detach(nodes: [AVAudioNode]) {
         for node in nodes {
+            guard node.engine != nil else { continue }
             engine.detach(node)
         }
     }
 
     /// Render output to an AVAudioFile for a duration.
     ///
-    /// NOTE: This will NOT render AKSequencer content;
+    /// NOTE: This will NOT render sequencer content;
     /// MIDI content will need to be recorded in real time
     ///
     ///     - Parameters:
     ///         - audioFile: An file initialized for writing
     ///         - duration: Duration to render, in seconds
     ///         - prerender: A closure called before rendering starts, use this to start players, set initial parameters, etc...
+    ///         - progress: A closure called while rendering, use this to fetch render progress
     ///
     @available(iOS 11, macOS 10.13, tvOS 11, *)
-    @objc public static func renderToFile(_ audioFile: AVAudioFile, duration: Double, prerender: (() -> Void)? = nil) throws {
-        try engine.renderToFile(audioFile, duration: duration, prerender: prerender)
+    @objc public static func renderToFile(_ audioFile: AVAudioFile,
+                                          duration: Double,
+                                          prerender: (() -> Void)? = nil,
+                                          progress: ((Double) -> Void)? = nil) throws {
+
+        try engine.renderToFile(audioFile, duration: duration, prerender: prerender, progress: progress)
     }
 
     @available(iOS 11, macOS 10.13, tvOS 11, *)
@@ -157,7 +163,7 @@ extension AudioKit {
 
             outputs.forEach {
                 let dstDescription = nodeDescription($0.id, $0.node)
-                print("\(srcDescritption) \(format) -> \(dstDescription)) bus: \($0.bus)")
+                AKLog("\(srcDescritption) \(format) -> \(dstDescription)) bus: \($0.bus)")
             }
         }
     }

@@ -42,6 +42,9 @@ public:
     
     /// call to load samples
     void loadSampleData(AKSampleDataDescriptor& sdd);
+
+    /// call to unload samples, freeing memory
+    void unloadAllSamples();
     
     // after loading samples, call one of these to build the key map
     
@@ -57,18 +60,22 @@ public:
     /// optionally call this to make samples continue looping after note-release
     void setLoopThruRelease(bool value) { loopThruRelease = value; }
     
-    void playNote(unsigned noteNumber, unsigned velocity, float noteFrequency);
+    void playNote(unsigned noteNumber, unsigned velocity);
     void stopNote(unsigned noteNumber, bool immediate);
     void sustainPedal(bool down);
     
     void render(unsigned channelCount, unsigned sampleCount, float *outBuffers[]);
-    
+
     void  setADSRAttackDurationSeconds(float value);
     float getADSRAttackDurationSeconds(void);
+    void  setADSRHoldDurationSeconds(float value);
+    float getADSRHoldDurationSeconds(void);
     void  setADSRDecayDurationSeconds(float value);
     float getADSRDecayDurationSeconds(void);
     void  setADSRSustainFraction(float value);
     float getADSRSustainFraction(void);
+    void  setADSRReleaseHoldDurationSeconds(float value);
+    float getADSRReleaseHoldDurationSeconds(void);
     void  setADSRReleaseDurationSeconds(float value);
     float getADSRReleaseDurationSeconds(void);
 
@@ -80,6 +87,15 @@ public:
     float getFilterSustainFraction(void);
     void  setFilterReleaseDurationSeconds(float value);
     float getFilterReleaseDurationSeconds(void);
+
+    void  setPitchAttackDurationSeconds(float value);
+    float getPitchAttackDurationSeconds(void);
+    void  setPitchDecayDurationSeconds(float value);
+    float getPitchDecayDurationSeconds(void);
+    void  setPitchSustainFraction(float value);
+    float getPitchSustainFraction(void);
+    void  setPitchReleaseDurationSeconds(float value);
+    float getPitchReleaseDurationSeconds(void);
     
 protected:
     // current sampling rate, samples/sec
@@ -92,10 +108,11 @@ protected:
     bool isKeyMapValid;
     
     // simple parameters
-    bool isFilterEnabled;
+    bool isFilterEnabled, restartVoiceLFO;
     
     // performance parameters
-    float masterVolume, pitchOffset, vibratoDepth, glideRate;
+    float masterVolume, pitchOffset, vibratoDepth, vibratoFrequency,
+    voiceVibratoDepth, voiceVibratoFrequency, glideRate;
     
     // parameters for mono-mode only
     
@@ -128,6 +145,9 @@ protected:
 
     // resonance [-20 dB, +20 dB] becomes linear [10.0, 0.1]
     float linearResonance;
+
+    // how much pitch ADSR adds on top of pitch
+    float pitchADSRSemitones;
     
     // sample-related parameters
     
@@ -142,7 +162,6 @@ protected:
     AudioKitCore::KeyMappedSampleBuffer *lookupSample(unsigned noteNumber, unsigned velocity);
     void play(unsigned noteNumber,
               unsigned velocity,
-              float noteFrequency,
               bool anotherKeyWasDown);
     void stop(unsigned noteNumber, bool immediate);
 };

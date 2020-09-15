@@ -59,7 +59,9 @@ public class AKResourcesAudioFileLoaderView: NSView {
     /// Handle click
     override public func mouseDown(with theEvent: NSEvent) {
         var isFileChanged = false
-        guard let player = player else { return }
+        guard let player = player else {
+            return
+        }
         let wasPlaying = player.isPlaying
         player.stop()
 
@@ -91,7 +93,11 @@ public class AKResourcesAudioFileLoaderView: NSView {
                 AKLog("Unable to load file: \(filename)")
                 return
             }
-            try! player.replace(file: file)
+            do {
+                try player.replace(file: file)
+            } catch {
+                AKLog("Could not replace file")
+            }
             if wasPlaying { player.play(from: 0) }
         }
         needsDisplay = true
@@ -99,31 +105,43 @@ public class AKResourcesAudioFileLoaderView: NSView {
 
     // Default background color per theme
     var bgColorForTheme: AKColor {
-        if let bgColor = bgColor { return bgColor }
+        if let bgColor = bgColor {
+            return bgColor
+        }
 
         switch AKStylist.sharedInstance.theme {
-        case .basic: return AKColor(white: 0.8, alpha: 1.0)
-        case .midnight: return AKColor(white: 0.7, alpha: 1.0)
+        case .basic:
+            return AKColor(white: 0.8, alpha: 1.0)
+        case .midnight:
+            return AKColor(white: 0.7, alpha: 1.0)
         }
     }
 
     // Default border color per theme
     var borderColorForTheme: AKColor {
-        if let borderColor = borderColor { return borderColor }
+        if let borderColor = borderColor {
+            return borderColor
+        }
 
         switch AKStylist.sharedInstance.theme {
-        case .basic: return AKColor(white: 0.3, alpha: 1.0).withAlphaComponent(0.8)
-        case .midnight: return AKColor.white.withAlphaComponent(0.8)
+        case .basic:
+            return AKColor(white: 0.3, alpha: 1.0).withAlphaComponent(0.8)
+        case .midnight:
+            return AKColor.white.withAlphaComponent(0.8)
         }
     }
 
     // Default text color per theme
     var textColorForTheme: AKColor {
-        if let textColor = textColor { return textColor }
+        if let textColor = textColor {
+            return textColor
+        }
 
         switch AKStylist.sharedInstance.theme {
-        case .basic: return AKColor(white: 0.3, alpha: 1.0)
-        case .midnight: return AKColor.white
+        case .basic:
+            return AKColor(white: 0.3, alpha: 1.0)
+        case .midnight:
+            return AKColor.white
         }
     }
 
@@ -158,12 +176,13 @@ public class AKResourcesAudioFileLoaderView: NSView {
         stopOuterPath.fill()
 
         //// stopInner Drawing
-        let stopInnerPath = NSBezierPath(roundedRect: NSRect(x: (rect.width * 0.13 - rect.height * 0.5) / 2 + cornerRadius,
-                                                             y: rect.height * 0.25,
-                                                             width: rect.height * 0.5,
-                                                             height: rect.height * 0.5),
-                                         xRadius: cornerRadius,
-                                         yRadius: cornerRadius)
+        let stopInnerPath = NSBezierPath(
+            roundedRect: NSRect(x: (rect.width * 0.13 - rect.height * 0.5) / 2 + cornerRadius,
+                                y: rect.height * 0.25,
+                                width: rect.height * 0.5,
+                                height: rect.height * 0.5),
+            xRadius: cornerRadius,
+            yRadius: cornerRadius)
         dark.setFill()
         stopInnerPath.fill()
 
@@ -177,7 +196,9 @@ public class AKResourcesAudioFileLoaderView: NSView {
         playOuterPath.fill()
 
         //// playInner Drawing
-        let playRect = NSRect(x: (rect.width * 0.13 - rect.height * 0.5) / 2 + borderWidth + rect.width * 0.13 + borderWidth,
+        let playRectX = (rect.width * 0.13 - rect.height * 0.5) / 2 + borderWidth +
+            rect.width * 0.13 + borderWidth
+        let playRect = NSRect(x: playRectX,
                               y: rect.height * 0.25,
                               width: rect.height * 0.5,
                               height: rect.height * 0.5)

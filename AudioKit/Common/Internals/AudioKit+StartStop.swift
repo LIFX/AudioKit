@@ -39,8 +39,10 @@ extension AudioKit {
         }
 
         #if os(iOS)
-        try updateSessionCategoryAndOptions()
-        try AVAudioSession.sharedInstance().setActive(true)
+        if !AKSettings.disableAVAudioSessionCategoryManagement {
+            try updateSessionCategoryAndOptions()
+            try AVAudioSession.sharedInstance().setActive(true)
+        }
 
         /// Notification observers
 
@@ -75,19 +77,6 @@ extension AudioKit {
         shouldBeRunning = true
     }
 
-    @objc internal static func updateSessionCategoryAndOptions() throws {
-        #if !os(macOS)
-        let sessionCategory = AKSettings.computedSessionCategory()
-
-        #if os(iOS)
-        let sessionOptions = AKSettings.computedSessionOptions()
-        try AKSettings.setSession(category: sessionCategory, with: sessionOptions)
-        #elseif os(tvOS)
-        try AKSettings.setSession(category: sessionCategory)
-        #endif
-        #endif
-    }
-
     /// Stop the audio engine
     @objc public static func stop() throws {
         // Stop the engine.
@@ -116,6 +105,22 @@ extension AudioKit {
         output = nil
         shouldBeRunning = false
     }
+}
+
+#if !os(macOS)
+extension AudioKit {
+    @objc internal static func updateSessionCategoryAndOptions() throws {
+        guard AKSettings.disableAVAudioSessionCategoryManagement == false else { return }
+
+        let sessionCategory = AKSettings.computedSessionCategory()
+
+        #if os(iOS)
+        let sessionOptions = AKSettings.computedSessionOptions()
+        try AKSettings.setSession(category: sessionCategory, with: sessionOptions)
+        #elseif os(tvOS)
+        try AKSettings.setSession(category: sessionCategory)
+        #endif
+    }
 
     // MARK: - Configuration Change Response
 
@@ -131,7 +136,7 @@ extension AudioKit {
                     return
                 }
 
-                if AKSettings.enableCategoryChangeHandling && !engine.isRunning && shouldBeRunning {
+                if AKSettings.enableCategoryChangeHandling, !engine.isRunning, shouldBeRunning {
                     #if !os(macOS)
                     let appIsNotActive = UIApplication.shared.applicationState != .active
                     let appDoesNotSupportBackgroundAudio = !AKSettings.appSupportsBackgroundAudio
@@ -169,7 +174,7 @@ extension AudioKit {
         // Notifications aren't guaranteed to come in on the main thread
 
         let attemptRestart = {
-            if AKSettings.enableRouteChangeHandling && shouldBeRunning && !engine.isRunning {
+            if AKSettings.enableRouteChangeHandling, shouldBeRunning, !engine.isRunning {
                 do {
                     #if !os(macOS)
                     let appIsNotActive = UIApplication.shared.applicationState != .active
@@ -203,3 +208,4 @@ extension AudioKit {
         }
     }
 }
+#endif

@@ -12,7 +12,7 @@ import AudioKit
 @IBDesignable open class AKTweaker: AKCoarseFineSlider {
 
     var nudger: AKNudger!
-    override public func setStable(value: Double) {
+    public override func setStable(value: Double) {
         nudger.setStable(value: value)
         coarseStepper.currentValue = value
         fineStepper.currentValue = value
@@ -48,23 +48,41 @@ import AudioKit
                           color: AKStylist.sharedInstance.nextColor,
                           frame: frame,
                           callback: { _ in })
-        coarseStepper.touchBeganCallback = {
-            self.touchBeganCallback()
+        coarseStepper.touchBeganCallback = { [weak self] in
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.touchBeganCallback()
         }
-        coarseStepper.touchEndedCallback = {
-            self.touchEndedCallback()
+        coarseStepper.touchEndedCallback = { [weak self] in
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.touchEndedCallback()
         }
-        fineStepper.touchBeganCallback = {
-            self.touchBeganCallback()
+        fineStepper.touchBeganCallback = { [weak self] in
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.touchBeganCallback()
         }
-        fineStepper.touchEndedCallback = {
-            self.touchEndedCallback()
+        fineStepper.touchEndedCallback = { [weak self] in
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.touchEndedCallback()
         }
-        slider.touchBeganCallback = {
-            self.touchBeganCallback()
+        slider.touchBeganCallback = { [weak self] in
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.touchBeganCallback()
         }
-        slider.touchEndedCallback = {
-            self.touchEndedCallback()
+        slider.touchEndedCallback = { [weak self] in
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.touchEndedCallback()
         }
         coarseStepper.backgroundColor = .clear
         fineStepper.backgroundColor = .clear
@@ -87,38 +105,56 @@ import AudioKit
                                             width: frame.width,
                                             height: frame.height * 0.7))
 
-        coarseStepper.callback = { value in
-            self.callback(value)
-            self.currentValue = value
-            self.fineStepper.currentValue = value
-            self.nudger.setStable(value: value)
-            self.slider.value = value
+        coarseStepper.callback = { [weak self] value in
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.callback(value)
+            strongSelf.currentValue = value
+            strongSelf.fineStepper.currentValue = value
+            strongSelf.nudger.setStable(value: value)
+            strongSelf.slider.value = value
         }
-        fineStepper.callback = { value in
-            self.callback(value)
-            self.currentValue = value
-            self.coarseStepper.currentValue = value
-            self.nudger.setStable(value: value)
-            self.slider.value = value
+        fineStepper.callback = { [weak self] value in
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.callback(value)
+            strongSelf.currentValue = value
+            strongSelf.coarseStepper.currentValue = value
+            strongSelf.nudger.setStable(value: value)
+            strongSelf.slider.value = value
         }
-        slider.callback = { value in
-            self.callback(value)
-            self.currentValue = value
-            self.coarseStepper.currentValue = value
-            self.fineStepper.currentValue = value
-            self.nudger.setStable(value: value)
+        slider.callback = { [weak self] value in
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.callback(value)
+            strongSelf.currentValue = value
+            strongSelf.coarseStepper.currentValue = value
+            strongSelf.fineStepper.currentValue = value
+            strongSelf.nudger.setStable(value: value)
         }
         nudger.linear = false
-        nudger.callback = {value in
-            self.callback(value)
-            self.currentValue = value
-            self.slider.value = value
+        nudger.callback = { [weak self] value in
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.callback(value)
+            strongSelf.currentValue = value
+            strongSelf.slider.value = value
         }
-        nudger.touchBeganCallback = {
-            self.touchBeganCallback()
+        nudger.touchBeganCallback = { [weak self] in
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.touchBeganCallback()
         }
-        nudger.touchEndedCallback = {
-            self.touchEndedCallback()
+        nudger.touchEndedCallback = { [weak self] in
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.touchEndedCallback()
         }
         nudger.backgroundColor = .clear
         nudger.showsValue = false
@@ -128,14 +164,14 @@ import AudioKit
         nudger.buttonBorderWidth = buttonBorderWidth
 
         self.addSubview(nameLabel)
-        self.addSubview(valueLabel!)
+        self.addSubview(valueLabel)
         self.addSubview(slider)
         self.addSubview(buttons)
         addToStackIfPossible(view: coarseStepper, stack: buttons)
         addToStackIfPossible(view: fineStepper, stack: buttons)
         addToStackIfPossible(view: nudger, stack: buttons)
     }
-    required public init?(coder aDecoder: NSCoder) {
+    public required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         name = "Tweaker"
     }

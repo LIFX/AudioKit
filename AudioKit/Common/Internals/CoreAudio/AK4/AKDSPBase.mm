@@ -12,6 +12,7 @@ void AKDSPBase::processWithEvents(AudioTimeStamp const *timestamp, AUAudioFrameC
                                   AURenderEvent const *events)
 {
     now = timestamp->mSampleTime;
+
     AUAudioFrameCount framesRemaining = frameCount;
     AURenderEvent const *event = events;
 
@@ -23,7 +24,7 @@ void AKDSPBase::processWithEvents(AudioTimeStamp const *timestamp, AUAudioFrameC
             return;
         }
 
-        // **** start late events late.
+        // start late events late.
         auto timeZero = AUEventSampleTime(0);
         auto headEventTime = event->head.eventSampleTime;
         AUAudioFrameCount const framesThisSegment = AUAudioFrameCount(std::max(timeZero, headEventTime - now));
@@ -40,15 +41,31 @@ void AKDSPBase::processWithEvents(AudioTimeStamp const *timestamp, AUAudioFrameC
         }
         performAllSimultaneousEvents(now, event);
     }
+    
 }
 
 /** From Apple Example code */
-void AKDSPBase::handleOneEvent(AURenderEvent const *event) {
+void AKDSPBase::performAllSimultaneousEvents(AUEventSampleTime now, AURenderEvent const *&event)
+{
+    do {
+        handleOneEvent(event);
+        event = event->head.next;
+
+        // While event is not null and is simultaneous (or late).
+    } while (event && event->head.eventSampleTime <= now);
+}
+
+/** From Apple Example code */
+void AKDSPBase::handleOneEvent(AURenderEvent const *event)
+{
     switch (event->head.eventType) {
         case AURenderEventParameter:
         case AURenderEventParameterRamp: {
-            // AUParameterEvent const& paramEvent = event->parameter;
-            // startRamp(paramEvent.parameterAddress, paramEvent.value, paramEvent.rampDurationSampleFrames);
+            AUParameterEvent const& paramEvent = event->parameter;
+
+            // virtual method, will work if subclass implements it
+            // See: AKFaderDSP
+            startRamp(paramEvent.parameterAddress, paramEvent.value, paramEvent.rampDurationSampleFrames);
             break;
         }
         case AURenderEventMIDI:
@@ -57,13 +74,4 @@ void AKDSPBase::handleOneEvent(AURenderEvent const *event) {
         default:
             break;
     }
-}
-
-/** From Apple Example code */
-void AKDSPBase::performAllSimultaneousEvents(AUEventSampleTime now, AURenderEvent const *&event) {
-    do {
-        handleOneEvent(event);
-        event = event->head.next;
-        // While event is not null and is simultaneous (or late).
-    } while (event && event->head.eventSampleTime <= now);
 }

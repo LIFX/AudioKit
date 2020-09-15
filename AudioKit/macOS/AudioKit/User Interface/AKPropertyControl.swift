@@ -33,7 +33,7 @@ import AudioKit
     @IBInspectable public var value: Double = 0 {
         didSet {
             value = range.clamp(value)
-            if discreteValues.count > 0 {
+            if discreteValues.isNotEmpty {
                 value = closest(to: value)
             }
 
@@ -68,7 +68,7 @@ import AudioKit
     public var callback: ((Double) -> Void) = { _ in }
 
     // Only integer
-    @IBInspectable public var discreteValues: [Double]  = []
+    public var discreteValues: [Double]  = []
 
     // Current dragging state, used to show/hide the value bubble
     public var isDragging: Bool = false
