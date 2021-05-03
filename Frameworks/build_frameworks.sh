@@ -247,28 +247,4 @@ create_catalyst_framework()
 echo "Building frameworks for version $VERSION on platforms: $PLATFORMS"
 rm -f build.log
 
-for os in $PLATFORMS; do
-	if test $os = 'iOS'; then
-		create_universal_framework iOS iphonesimulator iphoneos
-		#create_framework iOS iphoneos
-		#create_framework iOS iphonesimulator
-	elif test $os = 'tvOS'; then
-		create_universal_framework tvOS appletvsimulator appletvos
-		#create_framework tvOS appletvos
-		#create_framework tvOS appletvsimulator
-	elif test $os = 'macOS'; then
-		create_macos_framework macOS macosx
-		create_catalyst_framework
-	fi
-done
-
-# Only create the xcframework if all platforms were built
-if test "$PLATFORMS" = "iOS macOS tvOS"; then
-	create_xcframework AudioKit
-	create_xcframework AudioKitUI
-fi
-
-if [ -f distribute_built_frameworks.sh ]; then
-    ./distribute_built_frameworks.sh
-fi
-
+create_universal_framework iOS iphonesimulator iphoneos
